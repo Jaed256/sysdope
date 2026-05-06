@@ -33,5 +33,12 @@ export type Enzyme = {
   upregulationEffect?: string;
   /** Optional: medications / drug classes that modulate this target (with citations). */
   pharmacologyNotes?: PharmacologyNote[];
+  /**
+   * Multi-paragraph educational narrative (plain text; separate paragraphs with
+   * blank lines). Not clinical advice; see `overviewCitations` for sources.
+   */
+  educationalOverview?: string;
+  /** Citations supporting factual claims in `educationalOverview`. */
+  overviewCitations?: Citation[];
   citations: Citation[];
 };

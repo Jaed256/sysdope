@@ -57,4 +57,4 @@ export function illustrativeExtracellularDopamineNm(
 }
 
 export const PHYSIOLOGIC_OVERLAY_FOOTNOTE =
-  "Illustrative nM column uses a fixed linear anchor (95 relative units ≈ 13.5 nM) informed by rat striatal microdialysis discussions (PMID 15606895). Human extracellular levels differ by region and method; SysDope remains an educational toy.";
+  "Illustrative nM uses a fixed linear anchor (95 relative units ≈ 13.5 nM) informed by rat striatal microdialysis discussions (PMID 15606895). It applies to synaptic and extracellular dopamine rows only—not cytosolic vesicular pools, not blood serum, and not a patient assay. Human extracellular levels differ by region and method; SysDope remains an educational toy.";

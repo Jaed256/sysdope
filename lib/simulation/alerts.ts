@@ -1,7 +1,7 @@
 import type { SimulationAlert, SimulationState } from "@/types/simulation";
 import { ACTIVITY_MULTIPLIER } from "@/types/simulation";
 import { VESICLE_MAX_CAPACITY as CAPACITY } from "./kineticsConfig";
-import { isCatecholamineBreakdownFullyBlocked } from "./dopamineModulation";
+import { dopamineEnzymaticOxidationShield } from "./dopamineModulation";
 
 export const ALERT_THRESHOLDS = {
   thBottleneckTyrosine: 200,
@@ -15,7 +15,7 @@ export const ALERT_THRESHOLDS = {
   hvaUrineHigh: 200,
   cofactorDepleted: 30,
   /** Minimum auto-oxidation flux (relative units/tick) to surface ROS toy alert. */
-  autoOxidationMinFlux: 0.06,
+  autoOxidationMinFlux: 0.012,
 };
 
 const VESICLE_CAPACITY = CAPACITY;
@@ -118,17 +118,18 @@ export function evaluateAlerts(state: SimulationState): SimulationAlert[] {
   }
 
   const dopaQ = get(state, "dopaquinone", "cytosol");
-  if (
-    isCatecholamineBreakdownFullyBlocked(state) &&
-    ((state.lastAutoOxidationFlux ?? 0) > ALERT_THRESHOLDS.autoOxidationMinFlux ||
-      dopaQ > 6)
-  ) {
+  const fluxOx = state.lastAutoOxidationFlux ?? 0;
+  const shield = dopamineEnzymaticOxidationShield(state);
+  if (fluxOx > ALERT_THRESHOLDS.autoOxidationMinFlux) {
     out.push({
       id: "oxidative_stress_autooxidation",
       severity: "danger",
-      title: "Oxidative stress (toy auto-oxidation)",
+      title: "Oxidative stress (schematic dopamine auto-oxidation)",
       message:
-        "All major enzymatic clearance arms in this toy model (MAO-A, MAO-B, COMT, ALDH) are effectively off, so dopamine is diverted toward a dopaquinone-like pool to mimic non-enzymatic auto-oxidation and added ROS burden. Educational illustration only — not a clinical prediction. Catechol chemistry context: https://pubchem.ncbi.nlm.nih.gov/compound/681",
+        "Cytosolic + synaptic dopamine (relative simulation units) is being diverted toward a dopaquinone-like pool using a *schematic* rate that rises with dopamine burden and with weaker effective MAO-B / COMT / MAO-A / ALDH activity in this toy graph. " +
+        "In real tissue, dopamine chemistry couples O₂-driven autoxidation, pH-dependent pathways, transition-metal catalysis, quinone/aminechrome interconversions, and competing enzymatic clearance (MAO/COMT/ALDH)—this simulator does **not** resolve those channels separately. " +
+        "The toy dependence is inspired by aqueous autoxidation studies (O₂-driven chemistry; e.g. https://doi.org/10.1039/P29950000259 ) and pH sensitivity reviews ( https://doi.org/10.3389/fnmol.2018.00467 ), but it is **not** a calibrated in-vivo or serum-level prediction. " +
+        `Current toy shield ≈ ${shield.toFixed(2)} (higher = more enzymatic competition); dopaquinone pool ≈ ${dopaQ.toFixed(1)}.`,
       raisedAtTick: tick,
     });
   }

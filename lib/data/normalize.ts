@@ -140,6 +140,8 @@ export function mergeEnzymeSources(
   return {
     ...out,
     reactionEquationLatex: seed.reactionEquationLatex ?? out.reactionEquationLatex,
+    educationalOverview: seed.educationalOverview ?? out.educationalOverview,
+    overviewCitations: seed.overviewCitations ?? out.overviewCitations,
     citations: rankCitations(out.citations),
   };
 }

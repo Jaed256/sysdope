@@ -395,7 +395,7 @@ export function createInitialState(input: CreateInitialStateInput): SimulationSt
     phenylalanine: { precursor: 50 },
     tyrosine: { precursor: 50 },
     l_dopa: { cytosol: 5 },
-    dopamine: { cytosol: 5, vesicle: 30, synapse: 0 },
+    dopamine: { cytosol: 5, vesicle: 30, synapse: 0, extracellular: 0 },
     norepinephrine: { vesicle: 5, cytosol: 0 },
     epinephrine: { cytosol: 0 },
     dopal: { cytosol: 0 },

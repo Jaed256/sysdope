@@ -142,8 +142,12 @@ export function EnzymeFluxSection({ enzymeId }: Props) {
             Dopamine autoxidation (toy)
           </p>
           <p>
-            Enzymatic clearance competes with a schematic auto-oxidation sink in
-            relative units. Current sink flux:{" "}
+            Non-enzymatic dopamine loss in this toy lumps several real-world
+            channels—O₂-linked autoxidation, pH-sensitive pathways, metal-catalysed
+            oxidation, and quinone-type rearrangements—into one sink that competes
+            with modeled MAO/COMT/ALDH clearance (qualitative anchors: DOIs
+            10.1039/P29950000259 and 10.3389/fnmol.2018.00467 on the dopamine
+            compound card). Current sink flux:{" "}
             <span className="tabular-nums font-medium text-amber-200">
               {lastAutoOx.toFixed(4)}
             </span>

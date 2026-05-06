@@ -78,6 +78,15 @@ export function EnzymeDrawer() {
     enzyme?.reactionEquationLatex ??
     (enzyme ? findSeedEnzyme(enzyme.id)?.reactionEquationLatex : undefined);
 
+  const overviewText =
+    enzyme?.educationalOverview ??
+    (enzyme ? findSeedEnzyme(enzyme.id)?.educationalOverview : undefined);
+  const overviewCitations =
+    enzyme?.overviewCitations?.length ?
+      enzyme.overviewCitations
+    : enzyme ? findSeedEnzyme(enzyme.id)?.overviewCitations
+    : undefined;
+
   return (
     <Drawer
       open={open}
@@ -136,6 +145,33 @@ export function EnzymeDrawer() {
             )}
           </section>
 
+          {overviewText && (
+            <section>
+              <h3 className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
+                Biochemical context
+              </h3>
+              <div className="space-y-2 rounded-md bg-zinc-900/35 p-3 text-[11px] leading-relaxed text-zinc-200 ring-1 ring-zinc-800/80">
+                {overviewText.split(/\n\n+/).map((para, i) => (
+                  <p key={i}>{para}</p>
+                ))}
+              </div>
+              {showCitations && overviewCitations && overviewCitations.length > 0 && (
+                <div className="mt-2">
+                  <p className="mb-1 text-[10px] uppercase tracking-wider text-zinc-500">
+                    Overview sources
+                  </p>
+                  <CitationList citations={overviewCitations} />
+                </div>
+              )}
+              {!showCitations && overviewCitations && overviewCitations.length > 0 && (
+                <p className="mt-2 text-[10px] text-zinc-500">
+                  Turn on citations in Settings to open database links for this
+                  overview.
+                </p>
+              )}
+            </section>
+          )}
+
           {(enzyme.reactionEquation || effectiveRxLatex) && (
             <section>
               <h3 className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
@@ -156,11 +192,6 @@ export function EnzymeDrawer() {
                     {enzyme.reactionEquation}
                   </pre>
                 )
-              )}
-              {effectiveRxLatex && enzyme.reactionEquation && (
-                <pre className="mt-2 overflow-x-auto rounded-md bg-zinc-900/40 p-2 font-mono text-[10px] leading-snug text-zinc-400 ring-1 ring-zinc-800/60">
-                  Unicode / text form: {enzyme.reactionEquation}
-                </pre>
               )}
             </section>
           )}

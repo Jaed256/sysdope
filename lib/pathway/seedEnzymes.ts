@@ -1,5 +1,6 @@
 import type { Enzyme } from "@/types/enzyme";
 import type { Citation } from "@/types/citation";
+import { enzymeEducationalPick } from "@/lib/pathway/enzymeEducationalContent";
 
 const ACCESSED = "2026-05-05";
 
@@ -57,6 +58,7 @@ export const SEED_ENZYMES: Enzyme[] = [
     upregulationEffect:
       "More tyrosine is produced from phenylalanine, but downstream catecholamine output is still gated by TH.",
     citations: [uniprotCite("P00439"), ecCite("1.14.16.1")],
+    ...enzymeEducationalPick("pah"),
   },
   {
     id: "th",
@@ -77,6 +79,7 @@ export const SEED_ENZYMES: Enzyme[] = [
     upregulationEffect:
       "Increases L-DOPA flux; downstream dopamine rises until limited by DDC, VMAT2 capacity, or substrate availability.",
     citations: [uniprotCite("P07101"), ecCite("1.14.16.2")],
+    ...enzymeEducationalPick("th"),
   },
   {
     id: "ddc",
@@ -104,6 +107,7 @@ export const SEED_ENZYMES: Enzyme[] = [
       },
     ],
     citations: [uniprotCite("P20711"), ecCite("4.1.1.28")],
+    ...enzymeEducationalPick("ddc"),
   },
   {
     id: "dbh",
@@ -124,6 +128,7 @@ export const SEED_ENZYMES: Enzyme[] = [
     upregulationEffect:
       "Greater conversion of vesicular dopamine to norepinephrine.",
     citations: [uniprotCite("P09172"), ecCite("1.14.17.1")],
+    ...enzymeEducationalPick("dbh"),
   },
   {
     id: "pnmt",
@@ -143,6 +148,7 @@ export const SEED_ENZYMES: Enzyme[] = [
     upregulationEffect:
       "More norepinephrine is converted to epinephrine.",
     citations: [uniprotCite("P11086"), ecCite("2.1.1.28")],
+    ...enzymeEducationalPick("pnmt"),
   },
   {
     id: "comt",
@@ -171,6 +177,7 @@ export const SEED_ENZYMES: Enzyme[] = [
       },
     ],
     citations: [uniprotCite("P21964"), ecCite("2.1.1.6")],
+    ...enzymeEducationalPick("comt"),
   },
   {
     id: "mao_a",
@@ -199,6 +206,7 @@ export const SEED_ENZYMES: Enzyme[] = [
       },
     ],
     citations: [uniprotCite("P21397"), ecCite("1.4.3.4")],
+    ...enzymeEducationalPick("mao_a"),
   },
   {
     id: "mao_b",
@@ -227,6 +235,7 @@ export const SEED_ENZYMES: Enzyme[] = [
       },
     ],
     citations: [uniprotCite("P27338"), ecCite("1.4.3.4")],
+    ...enzymeEducationalPick("mao_b"),
   },
   {
     id: "aldh",
@@ -254,6 +263,7 @@ export const SEED_ENZYMES: Enzyme[] = [
       },
     ],
     citations: [uniprotCite("P05091"), ecCite("1.2.1.3")],
+    ...enzymeEducationalPick("aldh"),
   },
   {
     id: "tyr",
@@ -274,6 +284,7 @@ export const SEED_ENZYMES: Enzyme[] = [
       "Reduced melanin production; substrate stays in catechol form.",
     upregulationEffect: "Increased flux toward dopaquinone and melanin.",
     citations: [uniprotCite("P14679"), ecCite("1.14.18.1")],
+    ...enzymeEducationalPick("tyr"),
   },
   {
     id: "vmat2",
@@ -301,6 +312,7 @@ export const SEED_ENZYMES: Enzyme[] = [
       },
     ],
     citations: [uniprotCite("Q05940")],
+    ...enzymeEducationalPick("vmat2"),
   },
   {
     id: "dat",
@@ -328,6 +340,7 @@ export const SEED_ENZYMES: Enzyme[] = [
       },
     ],
     citations: [uniprotCite("Q01959")],
+    ...enzymeEducationalPick("dat"),
   },
   ...(["d1", "d2", "d3", "d4", "d5"] as const).map((id, idx): Enzyme => {
     const pharmacologyNotesByIdx: NonNullable<Enzyme["pharmacologyNotes"]>[] = [
@@ -384,6 +397,7 @@ export const SEED_ENZYMES: Enzyme[] = [
       upregulationEffect: `Stronger D${idx + 1} signaling per unit synaptic dopamine.`,
       pharmacologyNotes: pharmacologyNotesByIdx[idx],
       citations: [uniprotCite(["P21728", "P14416", "P35462", "P21917", "P21918"][idx]!)],
+      ...enzymeEducationalPick(id),
     };
   }),
 ];
