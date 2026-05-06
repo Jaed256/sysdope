@@ -19,8 +19,10 @@ export function SettingsPanel() {
   const [hydrated, setHydrated] = useState(false);
   const mode = useUIPreferences((s) => s.mode);
   const showCitations = useUIPreferences((s) => s.showCitations);
+  const disclaimerDismissed = useUIPreferences((s) => s.disclaimerDismissed);
   const setMode = useUIPreferences((s) => s.setMode);
   const setShowCitations = useUIPreferences((s) => s.setShowCitations);
+  const restoreDisclaimer = useUIPreferences((s) => s.restoreDisclaimer);
 
   // Avoid SSR/CSR mismatch flash from persisted preferences.
   useEffect(() => setHydrated(true), []);
@@ -102,6 +104,23 @@ export function SettingsPanel() {
                 className="mt-0.5 size-4 accent-fuchsia-400"
               />
             </label>
+
+            <div className="mt-3 border-t border-zinc-800 pt-3">
+              <p className="text-[11px] font-medium text-zinc-200">Disclaimer</p>
+              <p className="mt-1 text-[10px] leading-snug text-zinc-500">
+                Restore the amber educational banner that appears atop every page
+                after you dismiss it with the&nbsp;
+                <span className="text-zinc-400">Dismiss</span> button.
+              </p>
+              <button
+                type="button"
+                disabled={!hydrated || !disclaimerDismissed}
+                onClick={() => restoreDisclaimer()}
+                className="mt-2 w-full rounded-md bg-zinc-800/80 py-2 text-[11px] font-medium text-zinc-100 ring-1 ring-zinc-700 transition enabled:hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Show disclaimer banner
+              </button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

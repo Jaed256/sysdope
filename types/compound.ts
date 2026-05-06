@@ -6,7 +6,9 @@ export type CompoundClass =
   | "metabolite"
   | "pigment_precursor"
   | "pigment"
-  | "neurotransmitter";
+  | "neurotransmitter"
+  /** Non-chemical simulation state node (labeled as relative units in UI). */
+  | "simulation_state";
 
 export type NaturalOccurrence = {
   label: string;

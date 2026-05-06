@@ -30,11 +30,11 @@ export function NavBar() {
             </Link>
           ))}
           <a
-            href="https://github.com"
+            href="https://github.com/Jaed256/sysdope"
             target="_blank"
             rel="noreferrer"
             className="ml-1 flex items-center gap-1 rounded-md px-2.5 py-1.5 text-zinc-300 transition hover:bg-zinc-800/60 hover:text-zinc-100"
-            aria-label="Source code repository (placeholder)"
+            aria-label="SysDope source on GitHub"
           >
             <Code2 className="size-3.5" />
             <span className="hidden sm:inline">Source</span>

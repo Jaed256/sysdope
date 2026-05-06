@@ -158,7 +158,7 @@ vercel deploy --prod # production
 - **Phase 2** ✅ — kinetic-config extraction, inhibitor strength dial, BH4/SAM/NAD+ cofactor pools, adaptive substepping, real flux particles, layout pass, combo scenarios.
 - **Phase 3** ✅ — live UniProt, Rhea, ChEBI, and Europe PMC adapters with Zod validation, per-source caching, graceful fallback, in-app literature search panel, and a sources health endpoint that distinguishes live vs documented-stub adapters.
 - **Phase 4** ✅ — six guided lessons (TH bottleneck, MAO inhibition, ALDH protects against DOPAL, VMAT2 sequestration, DAT and synaptic duration, COMT and HVA) with one-click "Try it" scenario buttons, citation-backed cofactor tooltips for BH4 / Fe(II) / PLP / ascorbate / Cu(II) / O2 / FAD / SAM / NAD+ / Mg(II) / proton & Na/Cl gradients, beginner ↔ advanced UI mode toggle, and a show-citations toggle (persisted to localStorage). HMDB bulk-import pipeline still pending.
-- **Phase 5** — portfolio polish: animated previews, expanded `/about` and `/docs`, screenshots, HMDB bulk-import.
+- **Phase 5** ✅ — landing refresh (Phase 5 badge, GitHub links, animated preview frame), `/about` + `/docs` aligned with live adapters, dismissible global disclaimer with restore from settings/home footer, postsynaptic D1–D5 binding edges + dashboard rows, TH-fully-blocked info alert, flux particles rendered inside React Flow for correct coordinates, global keyframes for motion-safe animation. HMDB bulk-import still planned.
 
 ## License
 

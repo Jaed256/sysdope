@@ -213,6 +213,28 @@ export const SEED_REACTIONS: Reaction[] = [
     ...k("rx_dat"),
     citations: [placeholderCite()],
   },
+  ...(
+    [
+      ["rx_postsynaptic_d1", "d1", "postsynaptic_d1", "DRD1"] as const,
+      ["rx_postsynaptic_d2", "d2", "postsynaptic_d2", "DRD2"] as const,
+      ["rx_postsynaptic_d3", "d3", "postsynaptic_d3", "DRD3"] as const,
+      ["rx_postsynaptic_d4", "d4", "postsynaptic_d4", "DRD4"] as const,
+      ["rx_postsynaptic_d5", "d5", "postsynaptic_d5", "DRD5"] as const,
+    ] as const
+  ).map(
+    ([rxId, enzId, prodId, gene]): Reaction => ({
+      id: rxId,
+      enzymeId: enzId,
+      from: ["dopamine"],
+      to: [prodId],
+      fromCompartment: "synapse",
+      toCompartment: "synapse",
+      equation: `Synaptic DA + ${gene} \u2192 postsynaptic drive (education; not conserved mass balance)`,
+      reversible: false,
+      ...k(rxId),
+      citations: [placeholderCite()],
+    }),
+  ),
   {
     id: "rx_hva_excretion",
     from: ["hva"],

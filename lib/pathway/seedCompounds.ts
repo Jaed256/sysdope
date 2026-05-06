@@ -46,6 +46,17 @@ function chebiCite(chebiId: string): Citation {
   };
 }
 
+/** Low-confidence note for simulated graph nodes — not PubChem/ChEBI chemical entities. */
+function educationalNodeCite(label: string): Citation {
+  return {
+    sourceName: "SysDope authoring",
+    sourceType: "manual",
+    title: `${label} — pedagogical abstraction`,
+    accessedAt: ACCESSED,
+    confidence: "low",
+  };
+}
+
 export const SEED_COMPOUNDS: Compound[] = [
   {
     id: "phenylalanine",
@@ -288,6 +299,38 @@ export const SEED_COMPOUNDS: Compound[] = [
       "Polymeric pigment produced from catechol intermediates via tyrosinase in melanocytes.",
     citations: [pubchemCite("6325610")],
   },
+  ...(
+    [
+      ["postsynaptic_d1", "D1 pathway drive", "DRD1", "P21728"] as const,
+      ["postsynaptic_d2", "D2 pathway drive", "DRD2", "P14416"] as const,
+      ["postsynaptic_d3", "D3 pathway drive", "DRD3", "P35462"] as const,
+      ["postsynaptic_d4", "D4 pathway drive", "DRD4", "P21917"] as const,
+      ["postsynaptic_d5", "D5 pathway drive", "DRD5", "P21918"] as const,
+    ] as const
+  ).map(
+    ([id, title, gene, acc]): Compound => ({
+      id,
+      name: `${title} (relative simulation units)`,
+      aliases: [`${gene} activation`, "postsynaptic drive"],
+      compoundClass: "simulation_state",
+      endogenousRole:
+        "Pedagogical graph node summarizing dopamine-dependent postsynaptic engagement with " +
+        `${gene}: it aggregates signaling visually and intentionally does not conserve ` +
+        "dopamine mass (real binding is reversible and coupled to downstream effectors). " +
+        `Receptor biology: UniProt ${acc}.`,
+      citations: [
+        educationalNodeCite(title),
+        {
+          sourceName: "UniProt",
+          sourceType: "database",
+          title: `${gene} dopamine receptor`,
+          url: `https://www.uniprot.org/uniprotkb/${acc}/entry`,
+          accessedAt: ACCESSED,
+          confidence: "high",
+        } satisfies Citation,
+      ],
+    }),
+  ),
 ];
 
 export function findSeedCompound(id: string): Compound | undefined {

@@ -28,7 +28,7 @@ export function Hero() {
           className="mx-auto mb-5 inline-flex items-center gap-2 rounded-full bg-fuchsia-500/10 px-3 py-1 text-[11px] uppercase tracking-wider text-fuchsia-200 ring-1 ring-fuchsia-500/30"
         >
           <Sparkles className="size-3" />
-          Educational portfolio project · Phase 1
+          Educational portfolio project · Phase 5
         </motion.div>
 
         <motion.h1
@@ -51,9 +51,10 @@ export function Hero() {
           className="mx-auto mt-5 max-w-2xl text-balance text-base leading-relaxed text-zinc-400 sm:text-lg"
         >
           Drag substrate onto the pathway, watch enzymes throttle flux, release
-          vesicles into the cleft, and discover why TH is the rate-limiting
-          step. Every molecule, enzyme, and reaction in the side drawers is
-          backed by citations from PubChem, UniProt, ChEBI, HMDB, and Rhea.
+          vesicles into the cleft, route dopamine through D1-D5 teaching hubs,
+          and explore guided lessons. Side drawers merge seed data with live
+          PubChem, UniProt, ChEBI, Rhea, and Europe PMC — each field carries
+          citations (HMDB integration remains a documented stub).
         </motion.p>
 
         <motion.div
@@ -77,7 +78,7 @@ export function Hero() {
             Read the docs
           </Link>
           <a
-            href="https://github.com"
+            href="https://github.com/Jaed256/sysdope"
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center gap-2 rounded-full bg-transparent px-5 py-2.5 text-sm font-medium text-zinc-300 ring-1 ring-zinc-800 transition hover:bg-zinc-900/50"

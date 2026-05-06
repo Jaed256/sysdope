@@ -8,6 +8,8 @@ export type UIMode = "beginner" | "advanced";
 export type UIPreferences = {
   mode: UIMode;
   showCitations: boolean;
+  /** When true, the global disclaimer strip is hidden (restorable from settings). */
+  disclaimerDismissed: boolean;
 };
 
 export type UIPreferencesStore = UIPreferences & {
@@ -15,11 +17,14 @@ export type UIPreferencesStore = UIPreferences & {
   toggleMode: () => void;
   setShowCitations: (v: boolean) => void;
   toggleShowCitations: () => void;
+  dismissDisclaimer: () => void;
+  restoreDisclaimer: () => void;
 };
 
 const DEFAULTS: UIPreferences = {
   mode: "beginner",
   showCitations: true,
+  disclaimerDismissed: false,
 };
 
 /**
@@ -37,10 +42,22 @@ export const useUIPreferences = create<UIPreferencesStore>()(
         set({ mode: get().mode === "beginner" ? "advanced" : "beginner" }),
       setShowCitations: (showCitations) => set({ showCitations }),
       toggleShowCitations: () => set({ showCitations: !get().showCitations }),
+      dismissDisclaimer: () => set({ disclaimerDismissed: true }),
+      restoreDisclaimer: () => set({ disclaimerDismissed: false }),
     }),
     {
       name: "sysdope.ui.v1",
-      version: 1,
+      partialize: (s): UIPreferences => ({
+        mode: s.mode,
+        showCitations: s.showCitations,
+        disclaimerDismissed: s.disclaimerDismissed,
+      }),
+      merge: (persisted, current): UIPreferencesStore => ({
+        ...current,
+        ...(typeof persisted === "object" && persisted !== null
+          ? (persisted as Partial<UIPreferences>)
+          : {}),
+      }),
     },
   ),
 );

@@ -14,29 +14,29 @@ const HIGHLIGHTS = [
   {
     icon: Network,
     title: "Pathway as a mini-game",
-    body: "React Flow renders compounds, enzymes, and transporters across cellular compartments. Edges glow brighter when flux rises.",
+    body: "React Flow renders compartments, precursors, enzymes, transporters, and D1–D5 teaching nodes. Flux particles travel real reaction edges using the headless engine’s lastFlux map.",
   },
   {
     icon: Atom,
     title: "Headless kinetic engine",
-    body: "Simplified Michaelis–Menten flux per reaction with enzyme-activity multipliers, vesicle capacity, DAT reuptake, and degradation sinks.",
+    body: "Michaelis–Menten flux, cofactor pools, inhibitor strength sliders, vesicle saturation, vesicle releases, DAT reuptake, MAO/COMT/ALDH branches, receptor binding drive, urine HVA.",
   },
   {
     icon: ShieldAlert,
-    title: "Threshold alerts",
-    body: "TH bottleneck, vesicle saturation, cytosolic dopamine overflow, DOPAL toxicity, and synaptic overflow surface as in-game toasts.",
+    title: "Rich alerts",
+    body: "TH bottleneck, TH fully blocked cue, vesicle saturation, cytosolic overflow, DOPAL toxicity risk, cofactor starvation, synaptic overflow, urine HVA high.",
   },
   {
     icon: FlaskConical,
-    title: "Source-backed drawers",
-    body: "Click any molecule for live PubChem identifiers, structures, and citations. Click any enzyme for gene, EC number, cofactors, and inhibition effects.",
+    title: "Citation-first drawers",
+    body: "Compounds hydrate from PubChem + ChEBI. Enzymes merge UniProt + Rhea graphs. Guided lessons cite UniProt entries; HMDB/USDA stubs stay labelled until bulk keys land.",
   },
 ];
 
 const PAGES = [
-  { href: "/play", icon: Activity, title: "Launch the simulator", body: "Drag substrate, manipulate enzymes, run scenarios, watch the alerts fire." },
-  { href: "/docs", icon: BookOpen, title: "Architecture & data sources", body: "Where the data comes from, why TH is the bottleneck, what's stubbed in Phase 1." },
-  { href: "/about", icon: TestTube2, title: "About the project", body: "Goals, scientific limitations, and what each phase will add." },
+  { href: "/play", icon: Activity, title: "Launch the simulator", body: "Scenarios, Lab Notebook lessons, literature search panel, cofactor refill, reversible educational banner." },
+  { href: "/docs", icon: BookOpen, title: "Architecture & adapters", body: "Next.js handlers, normalization layer, caching, graceful fallbacks — live adapters vs stubs." },
+  { href: "/about", icon: TestTube2, title: "About & roadmap", body: "Teaching goals, phase history, kinetic placeholders, citations policy." },
 ];
 
 export function FeatureGrid() {

@@ -6,13 +6,13 @@ export const metadata = {
 };
 
 const SOURCES = [
-  { name: "PubChem", status: "live", note: "PUG-REST adapter — IUPAC, formula, MW, SMILES, InChIKey, image, synonyms." },
-  { name: "Rhea", status: "stub", note: "Adapter signature in place; replace stub with REST fetch." },
-  { name: "UniProt", status: "stub", note: "Adapter signature in place; replace stub with /uniprotkb/<id>.json." },
-  { name: "ChEBI", status: "stub", note: "Use OLS4 or ChEBI web services." },
-  { name: "HMDB", status: "stub", note: "Free use requires the XML dump under HMDB license." },
-  { name: "Europe PMC / PubMed", status: "stub", note: "Wire one of E-utilities, Europe PMC, Semantic Scholar, or OpenAlex." },
-  { name: "USDA FoodData Central", status: "stub", note: "Used only for source-backed natural-occurrence claims." },
+  { name: "PubChem", status: "live", note: "PUG REST — compound hydrate (CID, formula, SMILES, synonyms, 2D PNG). Cached with revalidate hints in the route handler." },
+  { name: "UniProt", status: "live", note: "JSON per accession — gene, function, catalytic activity, disease snippets, subcellular hints." },
+  { name: "Rhea", status: "live", note: "Curated reaction text + EC cross references; User-Agent required for some CDNs." },
+  { name: "ChEBI", status: "live", note: "OLS4 ontology term endpoint for definitions, InChI/SMILES mirrors when present." },
+  { name: "Europe PMC", status: "live", note: "Peer-reviewed search for the in-app literature drawer; results cached per query." },
+  { name: "HMDB", status: "stub", note: "No public JSON REST; seed links only until a licensed bulk import is added at build time." },
+  { name: "USDA FoodData Central", status: "stub", note: "Requires an API key; food-occurrence slots remain placeholder until provisioned." },
 ];
 
 const STATUS_STYLE: Record<string, string> = {
@@ -27,21 +27,22 @@ export default function DocsPage() {
       <article className="mx-auto max-w-3xl px-6 py-16 text-zinc-300">
         <p className="text-[11px] uppercase tracking-wider text-fuchsia-300">Docs</p>
         <h1 className="mt-1 text-4xl font-semibold tracking-tight text-zinc-50">
-          Architecture and data sources.
+          Architecture, adapters, and limitations.
         </h1>
 
-        <h2 className="mt-10 text-xl font-semibold text-zinc-100">Layers</h2>
+        <h2 className="mt-10 text-xl font-semibold text-zinc-100">Runtime layers</h2>
         <ul className="mt-3 space-y-1.5 text-sm">
           <li><code className="rounded bg-zinc-900 px-1.5 py-0.5 text-fuchsia-200">types/*</code> — canonical Compound, Enzyme, Reaction, Citation, SimulationState.</li>
-          <li><code className="rounded bg-zinc-900 px-1.5 py-0.5 text-fuchsia-200">lib/pathway/seed*</code> — hand-curated seed graph with placeholder citations.</li>
-          <li><code className="rounded bg-zinc-900 px-1.5 py-0.5 text-fuchsia-200">lib/simulation/*</code> — pure-TS engine: kinetics → tick → alerts.</li>
-          <li><code className="rounded bg-zinc-900 px-1.5 py-0.5 text-fuchsia-200">lib/data/*</code> — adapter per external source, all returning the same internal shape; merged via <code>normalize.ts</code>.</li>
-          <li><code className="rounded bg-zinc-900 px-1.5 py-0.5 text-fuchsia-200">app/api/*</code> — Next.js Route Handlers (Node runtime, Fluid Compute on Vercel).</li>
-          <li><code className="rounded bg-zinc-900 px-1.5 py-0.5 text-fuchsia-200">components/pathway/*</code> — React Flow custom nodes / edges + ambient particles.</li>
-          <li><code className="rounded bg-zinc-900 px-1.5 py-0.5 text-fuchsia-200">components/panels/*</code> — dashboard, controls, drawers, alerts, scenarios.</li>
+          <li><code className="rounded bg-zinc-900 px-1.5 py-0.5 text-fuchsia-200">lib/pathway/seed*</code> — graph content + placeholder kinetics ids.</li>
+          <li><code className="rounded bg-zinc-900 px-1.5 py-0.5 text-fuchsia-200">lib/simulation/*</code> — pure TypeScript engine (no React): tick, alerts, scenarios, cofactors.</li>
+          <li><code className="rounded bg-zinc-900 px-1.5 py-0.5 text-fuchsia-200">lib/data/*</code> — remote adapters + <code className="text-fuchsia-200">normalize.ts</code> merge helpers.</li>
+          <li><code className="rounded bg-zinc-900 px-1.5 py-0.5 text-fuchsia-200">app/api/*</code> — Route Handlers (Node runtime; cache headers / revalidate per adapter).</li>
+          <li><code className="rounded bg-zinc-900 px-1.5 py-0.5 text-fuchsia-200">components/pathway/*</code> — React Flow canvas, enzyme gates, molecule nodes, particle flux overlay layered inside RF.</li>
+          <li><code className="rounded bg-zinc-900 px-1.5 py-0.5 text-fuchsia-200">lib/knowledge/*</code> — guided-lesson corpus + cofactor tooltip strings (citations required per claim).</li>
+          <li><code className="rounded bg-zinc-900 px-1.5 py-0.5 text-fuchsia-200">lib/ui/preferencesStore.ts</code> — persisted beginner/advanced, citations toggle, disclaimer dismissal.</li>
         </ul>
 
-        <h2 className="mt-10 text-xl font-semibold text-zinc-100">Data sources</h2>
+        <h2 className="mt-10 text-xl font-semibold text-zinc-100">External data adapters</h2>
         <ul className="mt-3 space-y-2">
           {SOURCES.map((s) => (
             <li
@@ -61,28 +62,31 @@ export default function DocsPage() {
           ))}
         </ul>
 
+        <h2 className="mt-10 text-xl font-semibold text-zinc-100">Teaching-only graph elements</h2>
+        <p className="mt-3 text-sm leading-relaxed text-zinc-400">
+          Purple “postsynaptic drive” molecule nodes summarise dopamine signalling load per receptor family.
+          They intentionally do not conserve dopamine mass (real signalling is reversible, GPCR-coupled, and spatially heterogeneous).
+          Each node cites the corresponding UniProt receptor accession alongside a manual low-confidence authoring note explaining the abstraction.
+        </p>
+
         <h2 className="mt-10 text-xl font-semibold text-zinc-100">Source ranking</h2>
         <ol className="mt-3 list-decimal space-y-1 pl-5 text-sm text-zinc-300">
-          <li>Expert-curated biological databases (Rhea, UniProt, ChEBI, HMDB).</li>
+          <li>Expert-curated biological databases (Rhea, UniProt, ChEBI, HMDB when licensed).</li>
           <li>Chemistry databases (PubChem).</li>
           <li>Government / open food databases (USDA FDC, FooDB).</li>
-          <li>Peer-reviewed papers.</li>
-          <li>Manually curated fallback JSON.</li>
+          <li>Peer-reviewed papers surfaced through Europe PMC.</li>
+          <li>Manually curated seed JSON with explicit low-confidence citations.</li>
         </ol>
         <p className="mt-3 text-xs text-zinc-500">
-          When sources disagree the higher-confidence source wins, citations are
-          concatenated, deduped, and re-ranked. See
+          When sources disagree, citations are concatenated, deduped, and re-ranked in
           <code className="ml-1 rounded bg-zinc-900 px-1.5 py-0.5 text-fuchsia-200">lib/citations/sourceRanking.ts</code>.
         </p>
 
         <h2 className="mt-10 text-xl font-semibold text-zinc-100">Scientific limitations</h2>
         <p className="mt-3 text-sm leading-relaxed text-zinc-400">
-          The kinetic constants in the seed reactions are deliberate
-          educational placeholders chosen to make the teaching points visible.
-          They are not literature-derived rate constants. Real values would
-          require per-reaction citations and would replace the seed entries.
-          The simulation tracks "relative simulation units" — never serum or
-          tissue concentrations.
+          Kinetic constants in <code className="rounded bg-zinc-900 px-1.5 text-fuchsia-200">lib/simulation/kineticsConfig.ts</code> are educational placeholders chosen to make teaching points legible.
+          Replacing them with literature-backed numbers requires per-reaction citations and updated tests.
+          All UI numbers outside verified drawers remain “relative simulation units.”
         </p>
 
         <h2 className="mt-10 text-xl font-semibold text-zinc-100">API endpoints</h2>
