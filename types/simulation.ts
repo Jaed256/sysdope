@@ -66,4 +66,16 @@ export type SimulationState = {
   history: Record<string, number[]>;
   /** computed flux per reaction id from the last tick (for visualization) */
   lastFlux: Record<string, number>;
+  /**
+   * Postsynaptic D1–D5 gain multipliers (education). Drift with dopamine exposure
+   * to mimic compensatory up/down regulation in the toy model.
+   */
+  receptorHomeostaticFactor: Record<string, number>;
+  /**
+   * After the user dismisses a toast, hide alerts with the same `id` until
+   * `time >= alertDismissedUntil[id]` (tick-based cooldown).
+   */
+  alertDismissedUntil: Record<string, number>;
+  /** Magnitude of dopamine lost to auto-oxidation on the last tick (relative units). */
+  lastAutoOxidationFlux: number;
 };

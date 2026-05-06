@@ -58,8 +58,14 @@ function pubchemUrl(cid: string): string {
   return `https://pubchem.ncbi.nlm.nih.gov/compound/${cid}`;
 }
 
-function imageUrl(cid: string): string {
-  return `https://pubchem.ncbi.nlm.nih.gov/image/imgsrv.fcgi?cid=${cid}&t=l`;
+/**
+ * PubChem PUG REST PNG (2D depiction). More reliable in browsers than the
+ * legacy imgsrv.fcgi endpoint, which often failed behind Next/Image.
+ * Use 300×300 to reduce edge-case oversized responses; callers may still use
+ * native `<img>` for maximum compatibility.
+ */
+export function pubchem2dPngUrl(cid: string): string {
+  return `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${encodeURIComponent(cid)}/PNG?record_type=2d&image_size=300x300`;
 }
 
 function makeCitation(cid: string): Citation {
@@ -133,7 +139,7 @@ export async function getCompoundPropertiesByCid(
     inchiKey: first.InChIKey,
     iupacName: first.IUPACName,
     synonyms,
-    structure2dUrl: imageUrl(cid),
+    structure2dUrl: pubchem2dPngUrl(cid),
     citation: makeCitation(cid),
   };
 }

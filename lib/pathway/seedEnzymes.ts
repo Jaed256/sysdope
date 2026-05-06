@@ -25,6 +25,18 @@ function ecCite(ec: string): Citation {
   };
 }
 
+/** PubChem compound page as a medium-confidence anchor for named drugs. */
+function pubchemDrugCite(cid: string, title: string): Citation {
+  return {
+    sourceName: "PubChem",
+    sourceType: "database",
+    title,
+    url: `https://pubchem.ncbi.nlm.nih.gov/compound/${cid}`,
+    accessedAt: ACCESSED,
+    confidence: "medium",
+  };
+}
+
 export const SEED_ENZYMES: Enzyme[] = [
   {
     id: "pah",
@@ -78,6 +90,13 @@ export const SEED_ENZYMES: Enzyme[] = [
       "L-DOPA accumulates upstream and dopamine production drops.",
     upregulationEffect:
       "Faster conversion of L-DOPA to dopamine when L-DOPA is available.",
+    pharmacologyNotes: [
+      {
+        summary:
+          "Peripheral aromatic L-amino-acid decarboxylase inhibitors (for example carbidopa co-administered with levodopa) limit extracerebral conversion so more L-DOPA reaches the brain in Parkinson care; see the linked PubChem entry for the small-molecule profile.",
+        citations: [pubchemDrugCite("2481", "Carbidopa (PubChem)")],
+      },
+    ],
     citations: [uniprotCite("P20711"), ecCite("4.1.1.28")],
   },
   {
@@ -132,6 +151,13 @@ export const SEED_ENZYMES: Enzyme[] = [
       "Reduced 3-MT, normetanephrine, metanephrine, and HVA output; extracellular dopamine clearance slows.",
     upregulationEffect:
       "Faster O-methylation of catecholamines and increased HVA flux.",
+    pharmacologyNotes: [
+      {
+        summary:
+          "Peripheral COMT inhibitors such as entacapone are used as adjuncts to levodopa therapy in Parkinson disease to prolong L-DOPA half-life; PubChem summarizes the chemical entity.",
+        citations: [pubchemDrugCite("52894", "Entacapone (PubChem)")],
+      },
+    ],
     citations: [uniprotCite("P21964"), ecCite("2.1.1.6")],
   },
   {
@@ -151,6 +177,13 @@ export const SEED_ENZYMES: Enzyme[] = [
       "Cytosolic dopamine and other monoamines accumulate; DOPAL formation drops; HVA output falls.",
     upregulationEffect:
       "More rapid catabolism of cytosolic monoamines.",
+    pharmacologyNotes: [
+      {
+        summary:
+          "Reversible MAO-A inhibitors (example: moclobemide) increase monoamine cleft levels and are used clinically as antidepressants; verify indications on product labels—PubChem entry is for identity only.",
+        citations: [pubchemDrugCite("4194", "Moclobemide (PubChem)")],
+      },
+    ],
     citations: [uniprotCite("P21397"), ecCite("1.4.3.4")],
   },
   {
@@ -170,6 +203,13 @@ export const SEED_ENZYMES: Enzyme[] = [
       "Reduced oxidative deamination of dopamine; cytosolic dopamine accumulates.",
     upregulationEffect:
       "More rapid catabolism of dopamine to DOPAL.",
+    pharmacologyNotes: [
+      {
+        summary:
+          "Selective MAO-B inhibitors such as selegiline are used in Parkinson therapy to reduce dopamine breakdown; see PubChem for chemical identity.",
+        citations: [pubchemDrugCite("26757", "Selegiline (PubChem)")],
+      },
+    ],
     citations: [uniprotCite("P27338"), ecCite("1.4.3.4")],
   },
   {
@@ -188,6 +228,13 @@ export const SEED_ENZYMES: Enzyme[] = [
       "DOPAL accumulates because it is no longer oxidized to DOPAC; this is associated with neurotoxicity in the literature.",
     upregulationEffect:
       "Faster clearance of DOPAL and other reactive aldehydes.",
+    pharmacologyNotes: [
+      {
+        summary:
+          "Disulfiram is an ALDH inhibitor used clinically (for example in alcohol dependence); it illustrates how blocking aldehyde oxidation shifts aldehyde pools—PubChem record linked.",
+        citations: [pubchemDrugCite("3117", "Disulfiram (PubChem)")],
+      },
+    ],
     citations: [uniprotCite("P05091"), ecCite("1.2.1.3")],
   },
   {
@@ -224,6 +271,13 @@ export const SEED_ENZYMES: Enzyme[] = [
       "Cytosolic dopamine accumulates and vesicular dopamine drops; risk of DOPAL-driven toxicity rises.",
     upregulationEffect:
       "More dopamine is sequestered into vesicles, reducing cytosolic exposure to MAO.",
+    pharmacologyNotes: [
+      {
+        summary:
+          "VMAT2 depleters such as tetrabenazine reduce vesicular monoamine packaging and are used in hyperkinetic movement disorders; chemical identity on PubChem.",
+        citations: [pubchemDrugCite("6014", "Tetrabenazine (PubChem)")],
+      },
+    ],
     citations: [uniprotCite("Q05940")],
   },
   {
@@ -242,21 +296,72 @@ export const SEED_ENZYMES: Enzyme[] = [
       "Synaptic dopamine clearance slows; signaling at D1\u2013D5 receptors is prolonged and overflow alerts can trigger.",
     upregulationEffect:
       "Faster reuptake; synaptic dopamine duration shortens.",
+    pharmacologyNotes: [
+      {
+        summary:
+          "DAT-blocking stimulants (example: methylphenidate) increase extracellular catecholamine tone and are used in ADHD; PubChem summarizes the entity—always refer to prescribing information.",
+        citations: [pubchemDrugCite("4158", "Methylphenidate (PubChem)")],
+      },
+    ],
     citations: [uniprotCite("Q01959")],
   },
-  ...(["d1", "d2", "d3", "d4", "d5"] as const).map((id, idx): Enzyme => ({
-    id,
-    name: `Dopamine receptor D${idx + 1}`,
-    shortName: `D${idx + 1}`,
-    kind: "receptor",
-    geneSymbol: ["DRD1", "DRD2", "DRD3", "DRD4", "DRD5"][idx]!,
-    proteinName: `D(${idx + 1}) dopamine receptor`,
-    uniprotId: ["P21728", "P14416", "P35462", "P21917", "P21918"][idx]!,
-    subcellularLocation: "Postsynaptic plasma membrane (D1, D5 are Gs-coupled; D2, D3, D4 are Gi-coupled)",
-    inhibitionEffect: `Reduced D${idx + 1} signaling for any synaptic dopamine present.`,
-    upregulationEffect: `Stronger D${idx + 1} signaling per unit synaptic dopamine.`,
-    citations: [uniprotCite(["P21728", "P14416", "P35462", "P21917", "P21918"][idx]!)],
-  })),
+  ...(["d1", "d2", "d3", "d4", "d5"] as const).map((id, idx): Enzyme => {
+    const pharmacologyNotesByIdx: NonNullable<Enzyme["pharmacologyNotes"]>[] = [
+      [
+        {
+          summary:
+            "Fenoldopam is a D1-family agonist used as a vasodilator in acute settings; the PubChem page documents the chemical entity (clinical use per labeling).",
+          citations: [pubchemDrugCite("3346", "Fenoldopam (PubChem)")],
+        },
+      ],
+      [
+        {
+          summary:
+            "Haloperidol is a prototypical D2-family antagonist used in antipsychotic regimens, whereas pramipexole is a D2/D3-class agonist used in Parkinson disease—PubChem links are for structure/identity only.",
+          citations: [
+            pubchemDrugCite("3559", "Haloperidol (PubChem)"),
+            pubchemDrugCite("6077", "Pramipexole (PubChem)"),
+          ],
+        },
+      ],
+      [
+        {
+          summary:
+            "Pramipexole is a non-ergot dopamine agonist with prominent D3/D2 activity used in Parkinson disease and restless legs syndrome; see PubChem for the registered structure.",
+          citations: [pubchemDrugCite("6077", "Pramipexole (PubChem)")],
+        },
+      ],
+      [
+        {
+          summary:
+            "Many antipsychotics bind D4 among other monoamine receptors (polypharmacology). Clozapine is a multi-target atypical antipsychotic whose PubChem record is a convenient chemistry anchor.",
+          citations: [pubchemDrugCite("2818", "Clozapine (PubChem)")],
+        },
+      ],
+      [
+        {
+          summary:
+            "D5 is D1-like; levodopa remains a backbone oral dopamine-replacement precursor in Parkinson disease—PubChem summarizes the prodrug chemistry (metabolism via AADC to dopamine).",
+          citations: [pubchemDrugCite("6030", "Levodopa (PubChem)")],
+        },
+      ],
+    ];
+    return {
+      id,
+      name: `Dopamine receptor D${idx + 1}`,
+      shortName: `D${idx + 1}`,
+      kind: "receptor",
+      geneSymbol: ["DRD1", "DRD2", "DRD3", "DRD4", "DRD5"][idx]!,
+      proteinName: `D(${idx + 1}) dopamine receptor`,
+      uniprotId: ["P21728", "P14416", "P35462", "P21917", "P21918"][idx]!,
+      subcellularLocation:
+        "Postsynaptic plasma membrane (D1, D5 are Gs-coupled; D2, D3, D4 are Gi-coupled)",
+      inhibitionEffect: `Reduced D${idx + 1} signaling for any synaptic dopamine present.`,
+      upregulationEffect: `Stronger D${idx + 1} signaling per unit synaptic dopamine.`,
+      pharmacologyNotes: pharmacologyNotesByIdx[idx],
+      citations: [uniprotCite(["P21728", "P14416", "P35462", "P21917", "P21918"][idx]!)],
+    };
+  }),
 ];
 
 export function findSeedEnzyme(id: string): Enzyme | undefined {

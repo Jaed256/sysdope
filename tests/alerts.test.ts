@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createInitialState, tick } from "@/lib/simulation/engine";
 import { evaluateAlerts } from "@/lib/simulation/alerts";
+import { isCatecholamineBreakdownFullyBlocked } from "@/lib/simulation/dopamineModulation";
 import { SEED_ENZYMES } from "@/lib/pathway/seedEnzymes";
 import { SEED_REACTIONS } from "@/lib/pathway/seedReactions";
 import type { SimulationState } from "@/types/simulation";
@@ -36,6 +37,45 @@ describe("alerts", () => {
     };
     const alerts = evaluateAlerts(state);
     expect(alerts.every((a) => a.id !== "th_fully_blocked")).toBe(true);
+  });
+});
+
+describe("oxidative auto-oxidation toy alert", () => {
+  it("appears when MAO-A/B, COMT, and ALDH are fully off and dopamine pools are high", () => {
+    const base = createInitialState({ enzymes: SEED_ENZYMES });
+    let cur: SimulationState = {
+      ...base,
+      enzymeActivity: {
+        ...base.enzymeActivity,
+        mao_a: "inhibit",
+        mao_b: "inhibit",
+        comt: "inhibit",
+        aldh: "inhibit",
+        d1: "inhibit",
+        d2: "inhibit",
+        d3: "inhibit",
+        d4: "inhibit",
+        d5: "inhibit",
+      },
+      concentrations: {
+        ...base.concentrations,
+        dopamine: {
+          ...(base.concentrations.dopamine ?? {}),
+          cytosol: 90,
+          synapse: 70,
+          vesicle: 0,
+        },
+      },
+    };
+    expect(isCatecholamineBreakdownFullyBlocked(cur)).toBe(true);
+    let sawOxidative = false;
+    for (let i = 0; i < 40; i++) {
+      cur = tick(cur, { reactions: SEED_REACTIONS, enzymes: SEED_ENZYMES, dt: 0.8 });
+      if (cur.alerts.some((a) => a.id === "oxidative_stress_autooxidation")) {
+        sawOxidative = true;
+      }
+    }
+    expect(sawOxidative).toBe(true);
   });
 });
 

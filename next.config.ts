@@ -8,6 +8,11 @@ const nextConfig: NextConfig = {
         hostname: "pubchem.ncbi.nlm.nih.gov",
         pathname: "/image/**",
       },
+      {
+        protocol: "https",
+        hostname: "pubchem.ncbi.nlm.nih.gov",
+        pathname: "/rest/pug/**",
+      },
     ],
   },
 };

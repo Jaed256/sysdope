@@ -299,6 +299,25 @@ export const SEED_COMPOUNDS: Compound[] = [
       "Polymeric pigment produced from catechol intermediates via tyrosinase in melanocytes.",
     citations: [pubchemCite("6325610")],
   },
+  {
+    id: "da_autooxidation_stress",
+    name: "Dopamine auto-oxidation load (relative simulation units)",
+    aliases: ["oxidative tone", "quinone load"],
+    compoundClass: "simulation_state",
+    endogenousRole:
+      "Educational aggregate used when MAO-A, MAO-B, COMT, and ALDH are all fully inhibited in the simulator: cytosolic and synaptic dopamine is slowly drained into this pool to represent spontaneous auto-oxidation / quinone chemistry that is no longer cleared enzymatically. This is not a calibrated chemical yield.",
+    citations: [
+      educationalNodeCite("Auto-oxidation load"),
+      {
+        sourceName: "NCBI Bookshelf",
+        sourceType: "database",
+        title: "StatPearls — physiology of catecholamines (context)",
+        url: "https://www.ncbi.nlm.nih.gov/books/NBK507713/",
+        accessedAt: ACCESSED,
+        confidence: "low",
+      },
+    ],
+  },
   ...(
     [
       ["postsynaptic_d1", "D1 pathway drive", "DRD1", "P21728"] as const,

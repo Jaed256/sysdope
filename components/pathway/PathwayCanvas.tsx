@@ -12,6 +12,7 @@ import {
   useNodesState,
 } from "@xyflow/react";
 import { useEffect, useMemo, useRef } from "react";
+import { motion } from "motion/react";
 import {
   buildPathwayGraph,
   ENZYME_NODE_TYPE,
@@ -47,6 +48,7 @@ function PathwayCanvasInner() {
     initialEdges as PathwayEdge[],
   );
   const startLoop = useSimulationStore((s) => s.startLoop);
+  const lastAutoOx = useSimulationStore((s) => s.lastAutoOxidationFlux);
   const startedRef = useRef(false);
 
   useEffect(() => {
@@ -61,6 +63,15 @@ function PathwayCanvasInner() {
 
   return (
     <div className="relative h-full w-full">
+      {lastAutoOx > 0.04 && (
+        <motion.div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 z-20 bg-gradient-to-br from-amber-500/20 via-rose-600/20 to-transparent mix-blend-screen"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: [0.12, 0.5, 0.12] }}
+          transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+        />
+      )}
       <ReactFlow
         nodes={nodes}
         edges={edges}

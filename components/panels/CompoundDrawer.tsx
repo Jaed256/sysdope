@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
-import Image from "next/image";
 import { useSimulationStore } from "@/lib/simulation/store";
 import { Drawer } from "@/components/ui/Drawer";
 import { Badge } from "@/components/ui/Badge";
@@ -47,6 +46,7 @@ export function CompoundDrawer() {
   const [data, setData] = useState<ApiResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [structureFailed, setStructureFailed] = useState(false);
 
   useEffect(() => {
     if (!id) {
@@ -57,6 +57,7 @@ export function CompoundDrawer() {
     setLoading(true);
     setError(null);
     setData(null);
+    setStructureFailed(false);
     fetch(`/api/compounds/${encodeURIComponent(id)}`, { signal: ctl.signal })
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
@@ -109,18 +110,32 @@ export function CompoundDrawer() {
             <Badge variant="warning">HMDB stub</Badge>
           </div>
 
-          {compound.structure2dUrl && (
+          {compound.structure2dUrl && !structureFailed && (
             <div className="overflow-hidden rounded-md border border-zinc-800 bg-white">
-              {/* PubChem images are <https> public; explicit width/height for stability */}
-              <Image
+              <img
                 src={compound.structure2dUrl}
                 alt={`2D structure of ${compound.name}`}
                 width={300}
                 height={300}
                 className="h-auto w-full"
-                unoptimized
+                loading="lazy"
+                referrerPolicy="no-referrer"
+                onError={() => setStructureFailed(true)}
               />
             </div>
+          )}
+          {compound.structure2dUrl && structureFailed && compound.pubchemCid && (
+            <p className="rounded-md bg-zinc-900/60 p-2 text-[11px] text-zinc-300 ring-1 ring-zinc-800">
+              2D image could not load.{" "}
+              <a
+                className="text-fuchsia-300 underline hover:text-fuchsia-200"
+                href={`https://pubchem.ncbi.nlm.nih.gov/compound/${encodeURIComponent(compound.pubchemCid)}`}
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                Open structure on PubChem
+              </a>
+            </p>
           )}
 
           <section>

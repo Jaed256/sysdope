@@ -160,6 +160,34 @@ export function EnzymeDrawer() {
             )}
           </section>
 
+          {enzyme.pharmacologyNotes && enzyme.pharmacologyNotes.length > 0 && (
+            <section>
+              <h3 className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
+                Medications (illustrative)
+              </h3>
+              <ul className="space-y-2">
+                {enzyme.pharmacologyNotes.map((n, i) => (
+                  <li
+                    key={i}
+                    className="rounded-md bg-fuchsia-500/5 p-2 text-[11px] leading-snug text-fuchsia-50 ring-1 ring-fuchsia-500/25"
+                  >
+                    {n.summary}
+                    {showCitations && n.citations.length > 0 && (
+                      <div className="mt-2">
+                        <CitationList citations={n.citations} />
+                      </div>
+                    )}
+                  </li>
+                ))}
+              </ul>
+              {!showCitations && (
+                <p className="mt-1 text-[10px] text-zinc-500">
+                  Turn on citations in Settings to see PubChem links for each note.
+                </p>
+              )}
+            </section>
+          )}
+
           {enzyme.relatedReactions && enzyme.relatedReactions.length > 0 && (
             <section>
               <h3 className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">

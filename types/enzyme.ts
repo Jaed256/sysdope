@@ -8,6 +8,12 @@ export type DiseaseAssociation = {
   citations: Citation[];
 };
 
+/** Source-backed note linking common drug classes to the protein (education). */
+export type PharmacologyNote = {
+  summary: string;
+  citations: Citation[];
+};
+
 export type Enzyme = {
   id: string;
   name: string;
@@ -23,5 +29,7 @@ export type Enzyme = {
   diseases?: DiseaseAssociation[];
   inhibitionEffect?: string;
   upregulationEffect?: string;
+  /** Optional: medications / drug classes that modulate this target (with citations). */
+  pharmacologyNotes?: PharmacologyNote[];
   citations: Citation[];
 };

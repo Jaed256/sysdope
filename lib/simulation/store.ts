@@ -29,6 +29,7 @@ export type SimStore = SimulationState & {
 
   setEnzymeActivity: (enzymeId: string, level: EnzymeActivityLevel) => void;
   setInhibitorStrength: (enzymeId: string, strength: number) => void;
+  dismissAlert: (alertId: string) => void;
   applyScenario: (scenarioId: string, mode?: ApplyScenarioMode) => void;
   addPrecursor: (compoundId: string, compartment: Compartment, amount: number) => void;
   releaseVesicles: (count?: number) => void;
@@ -42,6 +43,8 @@ export type SimStore = SimulationState & {
 
   startLoop: () => () => void;
 };
+
+const ALERT_DISMISS_COOLDOWN_TICKS = 48;
 
 const initial = createInitialState({ enzymes: SEED_ENZYMES });
 
@@ -71,6 +74,15 @@ export const useSimulationStore = create<SimStore>((set, get) => ({
     const clamped = Math.min(1, Math.max(0, strength));
     set((s) => ({
       inhibitorStrength: { ...s.inhibitorStrength, [enzymeId]: clamped },
+    }));
+  },
+
+  dismissAlert: (alertId) => {
+    set((s) => ({
+      alertDismissedUntil: {
+        ...s.alertDismissedUntil,
+        [alertId]: s.time + ALERT_DISMISS_COOLDOWN_TICKS,
+      },
     }));
   },
 
@@ -104,6 +116,7 @@ export const useSimulationStore = create<SimStore>((set, get) => ({
         inhibitorStrength,
         cofactors,
         concentrations,
+        alertDismissedUntil: mode === "reset" ? {} : { ...s.alertDismissedUntil },
         eventLog: [
           ...baseState.eventLog,
           `t=${baseState.time} scenario "${scenario.title}" applied`,

@@ -2,6 +2,7 @@ import type { Compound } from "@/types/compound";
 import type { Enzyme } from "@/types/enzyme";
 import type { Citation } from "@/types/citation";
 import { rankCitations } from "@/lib/citations/sourceRanking";
+import { pubchem2dPngUrl } from "@/lib/data/pubchem";
 import type { PubChemProperties } from "./pubchem";
 import type { ChebiEntry } from "./chebi";
 import type { UniProtEntry } from "./uniprot";
@@ -54,7 +55,19 @@ export function mergeCompoundSources(
     };
   }
 
-  return { ...out, citations: rankCitations(out.citations) };
+  let merged: Compound = { ...out, citations: rankCitations(out.citations) };
+  if (
+    merged.pubchemCid != null &&
+    merged.pubchemCid !== "" &&
+    !merged.structure2dUrl
+  ) {
+    merged = {
+      ...merged,
+      structure2dUrl: pubchem2dPngUrl(merged.pubchemCid),
+    };
+  }
+
+  return merged;
 }
 
 /**

@@ -1,6 +1,7 @@
 import type { SimulationAlert, SimulationState } from "@/types/simulation";
 import { ACTIVITY_MULTIPLIER } from "@/types/simulation";
 import { VESICLE_MAX_CAPACITY as CAPACITY } from "./kineticsConfig";
+import { isCatecholamineBreakdownFullyBlocked } from "./dopamineModulation";
 
 export const ALERT_THRESHOLDS = {
   thBottleneckTyrosine: 200,
@@ -13,6 +14,8 @@ export const ALERT_THRESHOLDS = {
   synapticOverflow: 120,
   hvaUrineHigh: 200,
   cofactorDepleted: 30,
+  /** Minimum auto-oxidation flux (relative units/tick) to surface ROS toy alert. */
+  autoOxidationMinFlux: 0.06,
 };
 
 const VESICLE_CAPACITY = CAPACITY;
@@ -110,6 +113,22 @@ export function evaluateAlerts(state: SimulationState): SimulationAlert[] {
       title: "Synaptic dopamine overflow",
       message:
         "Synaptic dopamine is elevated. Reuptake by DAT and metabolism by COMT/MAO cannot keep up with release.",
+      raisedAtTick: tick,
+    });
+  }
+
+  const dopaQ = get(state, "dopaquinone", "cytosol");
+  if (
+    isCatecholamineBreakdownFullyBlocked(state) &&
+    ((state.lastAutoOxidationFlux ?? 0) > ALERT_THRESHOLDS.autoOxidationMinFlux ||
+      dopaQ > 6)
+  ) {
+    out.push({
+      id: "oxidative_stress_autooxidation",
+      severity: "danger",
+      title: "Oxidative stress (toy auto-oxidation)",
+      message:
+        "All major enzymatic clearance arms in this toy model (MAO-A, MAO-B, COMT, ALDH) are effectively off, so dopamine is diverted toward a dopaquinone-like pool to mimic non-enzymatic auto-oxidation and added ROS burden. Educational illustration only — not a clinical prediction. Catechol chemistry context: https://pubchem.ncbi.nlm.nih.gov/compound/681",
       raisedAtTick: tick,
     });
   }

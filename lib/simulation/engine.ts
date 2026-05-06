@@ -10,6 +10,14 @@ import type { Enzyme } from "@/types/enzyme";
 import { firstOrderRate, mmRate } from "./kinetics";
 import { evaluateAlerts } from "./alerts";
 import {
+  applyDopamineAutoOxidation,
+  enzymeEffectiveMultiplier,
+} from "./dopamineModulation";
+import {
+  defaultReceptorHomeostaticFactors,
+  stepReceptorHomeostasis,
+} from "./receptorHomeostasis";
+import {
   COFACTORS,
   DEFAULT_RELEASE_QUANTUM,
   DEFAULT_SYNAPTIC_DIFFUSION,
@@ -32,16 +40,6 @@ export type TickInputs = {
   synapticDiffusion?: number;
 };
 
-function readConc(
-  state: SimulationState,
-  compoundId: string,
-  compartment: Compartment,
-): number {
-  const map = state.concentrations[compoundId];
-  if (!map) return 0;
-  return map[compartment] ?? 0;
-}
-
 function writeConc(
   acc: Record<string, CompartmentMap>,
   compoundId: string,
@@ -52,14 +50,6 @@ function writeConc(
   const prev = existing[compartment] ?? 0;
   const next = Math.max(0, prev + delta);
   acc[compoundId] = { ...existing, [compartment]: next };
-}
-
-function ensureActivity(
-  state: SimulationState,
-  enzymeId: string | undefined,
-): EnzymeActivityLevel {
-  if (!enzymeId) return "normal";
-  return state.enzymeActivity[enzymeId] ?? "normal";
 }
 
 /**
@@ -112,12 +102,13 @@ function integrate(
   let maxFluxThisStep = 0;
 
   for (const r of inputs.reactions) {
-    const activityLevel = ensureActivity(state, r.enzymeId);
-    const baseActivity = ACTIVITY_MULTIPLIER[activityLevel];
-    const inhibitor = r.enzymeId
-      ? Math.min(1, Math.max(0, state.inhibitorStrength[r.enzymeId] ?? 0))
-      : 0;
-    const effectiveActivity = baseActivity * (1 - inhibitor);
+    let effectiveActivity = 1;
+    if (r.enzymeId) {
+      effectiveActivity = enzymeEffectiveMultiplier(state, r.enzymeId);
+      if (/^d[1-5]$/.test(r.enzymeId)) {
+        effectiveActivity *= state.receptorHomeostaticFactor?.[r.enzymeId] ?? 1;
+      }
+    }
 
     const cofactorInfo = cofactorModulator(r.id, cofactors);
 
@@ -267,6 +258,16 @@ export function tick(state: SimulationState, inputs: TickInputs): SimulationStat
     totalFlux = trial.flux;
   }
 
+  const { oxFlux } = applyDopamineAutoOxidation(state, acc, dt);
+  const receptorHomeostaticFactor = stepReceptorHomeostasis(
+    {
+      concentrations: acc,
+      receptorHomeostaticFactor:
+        state.receptorHomeostaticFactor ?? defaultReceptorHomeostaticFactors(),
+    },
+    dt,
+  );
+
   const intermediate: SimulationState = {
     ...state,
     time: state.time + 1,
@@ -275,9 +276,16 @@ export function tick(state: SimulationState, inputs: TickInputs): SimulationStat
     concentrations: acc,
     cofactors: cofactorsAcc,
     lastFlux: totalFlux,
+    lastAutoOxidationFlux: oxFlux,
+    receptorHomeostaticFactor,
+    alertDismissedUntil: state.alertDismissedUntil ?? {},
   };
 
-  const freshAlerts = evaluateAlerts(intermediate);
+  const rawAlerts = evaluateAlerts(intermediate);
+  const dismissed = intermediate.alertDismissedUntil;
+  const freshAlerts = rawAlerts.filter(
+    (a) => intermediate.time >= (dismissed[a.id] ?? 0),
+  );
   const previousIds = new Set(state.alerts.map((a) => a.id));
   const newlyRaised = freshAlerts.filter((a) => !previousIds.has(a.id));
 
@@ -366,6 +374,9 @@ export function createInitialState(input: CreateInitialStateInput): SimulationSt
     eventLog: ["t=0 simulation initialized"],
     history: {},
     lastFlux: {},
+    receptorHomeostaticFactor: defaultReceptorHomeostaticFactors(),
+    alertDismissedUntil: {},
+    lastAutoOxidationFlux: 0,
   };
 }
 

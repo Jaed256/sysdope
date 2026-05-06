@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { findSeedCompound } from "@/lib/pathway/seedCompounds";
-import { getCompoundPropertiesByCid } from "@/lib/data/pubchem";
+import { getCompoundPropertiesByCid, pubchem2dPngUrl } from "@/lib/data/pubchem";
 import { getChebiEntry } from "@/lib/data/chebi";
 import { mergeCompoundSources } from "@/lib/data/normalize";
 
@@ -31,9 +31,17 @@ export async function GET(_req: Request, { params }: Params) {
   ]);
 
   const merged = mergeCompoundSources(seed, pubchem, chebi);
+  const compound =
+    merged.pubchemCid != null && merged.pubchemCid !== ""
+      ? {
+          ...merged,
+          structure2dUrl:
+            merged.structure2dUrl ?? pubchem2dPngUrl(merged.pubchemCid),
+        }
+      : merged;
 
   return NextResponse.json({
-    compound: merged,
+    compound,
     sources: {
       seed: true,
       pubchem: pubchem !== null,
