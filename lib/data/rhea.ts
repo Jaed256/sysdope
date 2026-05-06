@@ -47,6 +47,17 @@ function makeCitation(rheaId: string): Citation {
   };
 }
 
+/**
+ * Common User-Agent header. Several EBI/SIB endpoints either rate-limit or
+ * outright reject requests with no UA (which is what Vercel's serverless
+ * runtime sends by default for `fetch`). Identifying ourselves keeps the
+ * service operators happy and avoids 4xx responses observed in production.
+ */
+const HEADERS = {
+  Accept: "application/json",
+  "User-Agent": "SysDope/1.0 (+https://sysdope.vercel.app; educational sim)",
+} as const;
+
 async function fetchJson<T>(url: string, schema: z.ZodType<T>): Promise<T | null> {
   const controller = new AbortController();
   const t = setTimeout(() => controller.abort(), TIMEOUT_MS);
@@ -54,10 +65,11 @@ async function fetchJson<T>(url: string, schema: z.ZodType<T>): Promise<T | null
     const res = await fetch(url, {
       signal: controller.signal,
       next: { revalidate: REVALIDATE_SECONDS, tags: ["rhea"] },
-      headers: { Accept: "application/json" },
+      headers: HEADERS,
     });
     if (!res.ok) {
-      console.warn(`[rhea] non-ok ${res.status} for ${url}`);
+      const snippet = await res.text().then((t) => t.slice(0, 200)).catch(() => "");
+      console.warn(`[rhea] non-ok ${res.status} for ${url} :: ${snippet}`);
       return null;
     }
     const json: unknown = await res.json();
@@ -75,6 +87,12 @@ async function fetchJson<T>(url: string, schema: z.ZodType<T>): Promise<T | null
   }
 }
 
+/**
+ * Build a Rhea search URL. Note: the Rhea backend treats colons inside the
+ * query value as significant, but it accepts both `:` and `%3A`. We do NOT
+ * URL-encode the colon explicitly — `URLSearchParams` will percent-encode
+ * `:` as `%3A` which still works.
+ */
 function buildUrl(query: string, size = 5): string {
   const params = new URLSearchParams({
     query,
@@ -119,7 +137,10 @@ export async function getRheaReactionsByEc(
 export async function rheaHealth(): Promise<{ ok: boolean; latencyMs: number }> {
   const start = Date.now();
   try {
-    const res = await fetch(buildUrl("rhea:10000", 1), { next: { revalidate: 60 } });
+    const res = await fetch(buildUrl("rhea:10000", 1), {
+      next: { revalidate: 60 },
+      headers: HEADERS,
+    });
     return { ok: res.ok, latencyMs: Date.now() - start };
   } catch {
     return { ok: false, latencyMs: Date.now() - start };
