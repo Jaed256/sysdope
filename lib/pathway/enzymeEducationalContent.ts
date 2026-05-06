@@ -1,10 +1,32 @@
 import type { Citation } from "@/types/citation";
 import type { Enzyme } from "@/types/enzyme";
-import { AUTOOXIDATION_LITERATURE } from "@/lib/simulation/kineticsConfig";
 import {
   CITATION_RAT_STRIATAL_EC_DA_MICRODIALYSIS,
   CITATION_STRIATAL_DA_TRANSMISSION_REVIEW,
 } from "@/lib/education/physiologicDisplay";
+
+/** Qualitative literature anchors for aqueous dopamine oxidation (not calibrated kinetics). */
+const DOPAMINE_AUTOXIDATION_CONTEXT_CITES: Citation[] = [
+  {
+    sourceName: "Journal of the Chemical Society, Perkin Transactions 2",
+    sourceType: "paper",
+    title:
+      "Spontaneous autoxidation of dopamine: aqueous kinetics and O₂ involvement (context for non-enzymatic oxidation)",
+    doi: "10.1039/P29950000259",
+    url: "https://doi.org/10.1039/P29950000259",
+    accessedAt: "2026-05-06",
+    confidence: "high",
+  },
+  {
+    sourceName: "Frontiers in Molecular Neuroscience",
+    sourceType: "paper",
+    title: "Dopamine autoxidation is controlled by acidic pH (mechanistic context)",
+    doi: "10.3389/fnmol.2018.00467",
+    url: "https://doi.org/10.3389/fnmol.2018.00467",
+    accessedAt: "2026-05-06",
+    confidence: "high",
+  },
+];
 
 const ACC = "2026-05-06";
 
@@ -97,7 +119,7 @@ const PACKS: Record<string, Pack> = {
       "Monoamine oxidase B (MAO-B) oxidatively deaminates dopamine to DOPAL in astrocytes and neurons, feeding the aldehyde into aldehyde dehydrogenase pathways toward DOPAC and ultimately HVA. MAO-B-generated H2O2 contributes to oxidative load in tissue models; the relationship to pathology is debated and region-specific.\n\n" +
       "Selective MAO-B inhibitors (for example selegiline, rasagiline) are used in Parkinson disease partly to spare cytosolic dopamine when levodopa is co-administered; transdermal delivery routes differ in peripheral MAO-A exposure. The simulator collapses glia vs neuron compartments.\n\n" +
       "Non-enzymatic autoxidation of dopamine is represented separately as a schematic sink that competes when enzymatic clearance is pharmacologically weakened—see autoxidation citations.",
-    overviewCitations: [uniprot("P27338"), ...AUTOOXIDATION_LITERATURE],
+    overviewCitations: [uniprot("P27338"), ...DOPAMINE_AUTOXIDATION_CONTEXT_CITES],
   },
   aldh: {
     educationalOverview:
