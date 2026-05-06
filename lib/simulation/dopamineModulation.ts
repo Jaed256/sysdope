@@ -1,6 +1,7 @@
 import type { CompartmentMap, SimulationState } from "@/types/simulation";
 import { ACTIVITY_MULTIPLIER } from "@/types/simulation";
 import type { Compartment } from "@/types/reaction";
+import { REACTION_KINETICS } from "./kineticsConfig";
 
 function writeConc(
   acc: Record<string, CompartmentMap>,
@@ -21,6 +22,25 @@ export function enzymeEffectiveMultiplier(
   const lvl = state.enzymeActivity[enzymeId] ?? "normal";
   const inh = Math.min(1, Math.max(0, state.inhibitorStrength[enzymeId] ?? 0));
   return ACTIVITY_MULTIPLIER[lvl] * (1 - inh);
+}
+
+/**
+ * Non-dimensional index of modeled enzymatic clearance competing with the
+ * schematic auto-oxidation sink. Uses vmax weights from `REACTION_KINETICS`
+ * (relative simulation units, not SI rates).
+ */
+export function dopamineEnzymaticOxidationShield(state: SimulationState): number {
+  const k = REACTION_KINETICS;
+  const mB = enzymeEffectiveMultiplier(state, "mao_b");
+  const mA = enzymeEffectiveMultiplier(state, "mao_a");
+  const comt = enzymeEffectiveMultiplier(state, "comt");
+  const aldh = enzymeEffectiveMultiplier(state, "aldh");
+  return (
+    mB * k.rx_mao_da.vmax +
+    comt * k.rx_comt_da_to_3mt.vmax +
+    aldh * k.rx_aldh_dopal.vmax * 0.22 +
+    mA * k.rx_mao_3mt.vmax * 0.06
+  );
 }
 
 export function isCatecholamineBreakdownFullyBlocked(state: SimulationState): boolean {
