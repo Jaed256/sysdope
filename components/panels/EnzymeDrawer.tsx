@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/Badge";
 import { CitationList } from "@/components/ui/CitationList";
 import { CofactorChip } from "@/components/ui/CofactorChip";
 import { KaTeXBlock } from "@/components/ui/KaTeXBlock";
+import { EnzymeFluxSection } from "@/components/panels/EnzymeFluxSection";
 import { useUIPreferences } from "@/lib/ui/preferencesStore";
 import type { Enzyme } from "@/types/enzyme";
 
@@ -131,30 +132,36 @@ export function EnzymeDrawer() {
             )}
           </section>
 
-          {enzyme.reactionEquation && (
+          {(enzyme.reactionEquation || enzyme.reactionEquationLatex) && (
             <section>
               <h3 className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
                 Reaction catalyzed
               </h3>
-              <pre className="overflow-x-auto rounded-md bg-zinc-900/60 p-2 font-mono text-[11px] leading-snug text-zinc-100 ring-1 ring-zinc-800">
-                {enzyme.reactionEquation}
-              </pre>
-              {enzyme.reactionEquationLatex && (
-                <div className="mt-2 space-y-1">
-                  <p className="text-[10px] uppercase tracking-wider text-zinc-500">
-                    Reaction (KaTeX)
-                  </p>
-                  <div className="overflow-x-auto rounded-md bg-zinc-950/80 px-2 py-2 ring-1 ring-zinc-800/80">
-                    <KaTeXBlock
-                      latex={enzyme.reactionEquationLatex}
-                      displayMode
-                      className="text-[11px] text-zinc-100 [&_.katex]:text-zinc-100"
-                    />
-                  </div>
+              {enzyme.reactionEquationLatex ? (
+                <div className="overflow-x-auto rounded-md bg-zinc-950/80 px-2 py-3 ring-1 ring-zinc-800/80">
+                  <KaTeXBlock
+                    key={`${enzyme.id}-katex-rx`}
+                    latex={enzyme.reactionEquationLatex}
+                    displayMode
+                    className="katex-wrap text-zinc-100 [&_.katex]:text-zinc-100 [&_.katex-display]:m-0"
+                  />
                 </div>
+              ) : (
+                enzyme.reactionEquation && (
+                  <pre className="overflow-x-auto rounded-md bg-zinc-900/60 p-2 font-mono text-[11px] leading-snug text-zinc-100 ring-1 ring-zinc-800">
+                    {enzyme.reactionEquation}
+                  </pre>
+                )
+              )}
+              {enzyme.reactionEquationLatex && enzyme.reactionEquation && (
+                <pre className="mt-2 overflow-x-auto rounded-md bg-zinc-900/40 p-2 font-mono text-[10px] leading-snug text-zinc-400 ring-1 ring-zinc-800/60">
+                  Unicode / text form: {enzyme.reactionEquation}
+                </pre>
               )}
             </section>
           )}
+
+          {enzyme.id && <EnzymeFluxSection enzymeId={enzyme.id} />}
 
           <section className="grid grid-cols-1 gap-2">
             {enzyme.inhibitionEffect && (

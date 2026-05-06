@@ -187,16 +187,40 @@ export function CompoundDrawer() {
                     <p className="text-xs font-medium text-zinc-100">
                       {n.label}
                     </p>
-                    <p className="text-[11px] text-zinc-400">{n.evidence}</p>
+                    {n.dietaryRole && (
+                      <p className="mt-1 text-[11px] leading-snug text-zinc-300">
+                        <span className="font-semibold text-zinc-400">
+                          Role:{" "}
+                        </span>
+                        {n.dietaryRole}
+                      </p>
+                    )}
+                    <p className="mt-1 text-[11px] leading-relaxed text-zinc-400">
+                      {n.evidence}
+                    </p>
+                    {showCitations && n.citations.length > 0 && (
+                      <div className="mt-2">
+                        <CitationList citations={n.citations} />
+                      </div>
+                    )}
                   </li>
                 ))}
               </ul>
             ) : (
               <p className="text-xs italic text-zinc-500">
-                No source-backed food entries yet. Wire the USDA FoodData
-                Central adapter (currently a stub) to populate this section.
+                No source-backed food entries for this compound yet. USDA FoodData
+                Central is the supported reference for commodity-specific
+                composition queries.
               </p>
             )}
+            {compound.naturalOccurrence &&
+              compound.naturalOccurrence.length > 0 &&
+              !showCitations && (
+                <p className="mt-2 text-[10px] text-zinc-500">
+                  Turn on citations in Settings to show USDA / PubChem links for each
+                  food note.
+                </p>
+              )}
           </section>
 
           {showCitations && (

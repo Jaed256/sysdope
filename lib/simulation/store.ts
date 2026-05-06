@@ -9,7 +9,7 @@ import type {
 import type { Compartment } from "@/types/reaction";
 import { SEED_ENZYMES } from "@/lib/pathway/seedEnzymes";
 import { SEED_REACTIONS } from "@/lib/pathway/seedReactions";
-import { createInitialState, tick } from "./engine";
+import { applyVesicleReleaseDirect, createInitialState, tick } from "./engine";
 import { SCENARIOS, type Scenario } from "./scenarios";
 import {
   COFACTORS,
@@ -143,10 +143,8 @@ export const useSimulationStore = create<SimStore>((set, get) => ({
   },
 
   releaseVesicles: (count = 1) => {
-    set((s) => ({
-      pendingReleases: s.pendingReleases + count,
-      eventLog: [...s.eventLog, `t=${s.time} vesicle release x${count}`].slice(-200),
-    }));
+    const n = Math.max(1, Math.floor(count));
+    set((s) => applyVesicleReleaseDirect(s, n));
   },
 
   togglePause: () => set((s) => ({ paused: !s.paused })),

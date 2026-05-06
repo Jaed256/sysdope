@@ -1,7 +1,6 @@
 "use client";
 
 import katex from "katex";
-import "katex/dist/katex.min.css";
 import { useEffect, useRef } from "react";
 
 type Props = {
@@ -25,12 +24,14 @@ export function KaTeXBlock({
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    el.innerHTML = "";
     try {
       katex.render(latex, el, {
         displayMode,
         throwOnError: false,
         strict: "ignore",
         trust: false,
+        output: "html",
       });
     } catch {
       el.textContent = latex;
@@ -41,6 +42,7 @@ export function KaTeXBlock({
     <div
       ref={ref}
       className={className}
+      style={{ minHeight: displayMode ? "2.25rem" : undefined }}
       // KaTeX injects presentation MathML/HTML; avoid hydration mismatch.
       suppressHydrationWarning
     />

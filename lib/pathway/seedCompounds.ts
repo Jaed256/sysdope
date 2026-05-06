@@ -24,6 +24,17 @@ function pubchemCite(cid: string): Citation {
   };
 }
 
+function usdaFoodDataCentralCite(): Citation {
+  return {
+    sourceName: "USDA FoodData Central",
+    sourceType: "government",
+    title: "USDA FoodData Central — national nutrient and food composition browser",
+    url: "https://fdc.nal.usda.gov/",
+    accessedAt: ACCESSED,
+    confidence: "medium",
+  };
+}
+
 function hmdbCite(hmdbId: string): Citation {
   return {
     sourceName: "HMDB",
@@ -67,11 +78,21 @@ export const SEED_COMPOUNDS: Compound[] = [
     hmdbId: "HMDB0000159",
     chebiId: "17295",
     endogenousRole:
-      "Essential aromatic amino acid; precursor to tyrosine via PAH and to multiple catecholamines downstream.",
+      "Essential aromatic amino acid imported from diet; in hepatocytes PAH uses (6R)-BH₄ and O₂ to hydroxylate the phenyl ring, producing L-tyrosine as the gateway to catecholamine biosynthesis in other tissues.",
     citations: [
       pubchemCite("6140"),
       hmdbCite("HMDB0000159"),
       chebiCite("17295"),
+    ],
+    naturalOccurrence: [
+      {
+        label: "Protein-rich foods (examples: legumes, nuts, eggs, dairy, meats)",
+        dietaryRole:
+          "Indispensable amino acid incorporated into proteins; in the liver, PAH also uses dietary phenylalanine as substrate for hydroxylation to tyrosine.",
+        evidence:
+          "Phenylalanine density varies widely by food and preparation. Look up specific commodities in USDA FoodData Central rather than assuming a single canonical concentration.",
+        citations: [usdaFoodDataCentralCite()],
+      },
     ],
   },
   {
@@ -83,11 +104,21 @@ export const SEED_COMPOUNDS: Compound[] = [
     hmdbId: "HMDB0000158",
     chebiId: "17895",
     endogenousRole:
-      "Conditionally essential aromatic amino acid; direct substrate of tyrosine hydroxylase (TH) on the catecholamine pathway.",
+      "Aromatic amino acid made from phenylalanine (PAH) or taken up from diet; tyrosine hydroxylase (TH) is the committed step that installs the catechol ring of L-DOPA using (6R)-BH₄ and O₂, so tyrosine availability and BH₄ pools jointly gate dopamine synthesis.",
     citations: [
       pubchemCite("6057"),
       hmdbCite("HMDB0000158"),
       chebiCite("17895"),
+    ],
+    naturalOccurrence: [
+      {
+        label: "Dietary protein sources (similar spread to other amino acids)",
+        dietaryRole:
+          "Tyrosine can be supplied fully from diet or spared when phenylalanine is adequate (PAH makes tyrosine from phenylalanine); it is the direct amino-acid substrate pool for TH in catecholamine neurons.",
+        evidence:
+          "Use FoodData Central to compare tyrosine content across branded foods; values are not interchangeable between products.",
+        citations: [usdaFoodDataCentralCite()],
+      },
     ],
   },
   {
@@ -99,11 +130,30 @@ export const SEED_COMPOUNDS: Compound[] = [
     hmdbId: "HMDB0000181",
     chebiId: "15765",
     endogenousRole:
-      "Direct precursor of dopamine; product of TH on tyrosine.",
+      "L-DOPA (levodopa) is the immediate biochemical precursor to dopamine: aromatic L-amino-acid decarboxylase (DDC / AADC) removes the carboxyl group to form dopamine. " +
+      "In Parkinson disease, oral levodopa (almost always combined with a peripheral DDC inhibitor such as carbidopa or benserazide) is a mainstay symptomatic therapy because it augments substrate delivery for the remaining AADC activity even when endogenous TH-dependent L-DOPA synthesis falls; clinical dosing, motor complications, and contraindications are outside this toy model—see StatPearls and product labels.",
     citations: [
       pubchemCite("6047"),
       hmdbCite("HMDB0000181"),
       chebiCite("15765"),
+      {
+        sourceName: "NCBI Bookshelf",
+        sourceType: "database",
+        title: "StatPearls — Parkinson disease (levodopa therapy overview)",
+        url: "https://www.ncbi.nlm.nih.gov/books/NBK536722/",
+        accessedAt: ACCESSED,
+        confidence: "low",
+      },
+    ],
+    naturalOccurrence: [
+      {
+        label: "Mucuna and other legumes (historical / complementary contexts)",
+        dietaryRole:
+          "Levodopa is the immediate precursor to dopamine in AADC-expressing tissues; oral levodopa (almost always with a peripheral DDC inhibitor in modern therapy) is the pharmacologic standard, distinct from uncontrolled dietary sources.",
+        evidence:
+          "Some legumes contain L-DOPA as a natural product, but content is variable and not a substitute for regulated drug products; see StatPearls for clinical context and use FoodData Central only for commodity-specific composition questions.",
+        citations: [usdaFoodDataCentralCite(), pubchemCite("6047")],
+      },
     ],
   },
   {
@@ -115,11 +165,40 @@ export const SEED_COMPOUNDS: Compound[] = [
     hmdbId: "HMDB0000073",
     chebiId: "18243",
     endogenousRole:
-      "Catecholamine neurotransmitter; signals via D1–D5 receptors and is the immediate precursor of norepinephrine.",
+      "Catecholamine neurotransmitter packaged in vesicles (VMAT2), released into the synaptic cleft, acting on D1–D5 receptors, and cleared by reuptake (DAT) plus COMT/MAO catabolism. " +
+      "At neutral-to-basic pH in aqueous media, dopamine can also undergo metal-free or metal-catalysed autoxidation toward quinones and ROS co-products; in SysDope that chemistry is represented only as a *schematic* extra sink competing with enzymatic clearance (relative simulation units), informed qualitatively by autoxidation literature—not as a calibrated brain concentration model.",
     citations: [
       pubchemCite("681"),
       hmdbCite("HMDB0000073"),
       chebiCite("18243"),
+      {
+        sourceName: "Journal of the Chemical Society, Perkin Transactions 2",
+        sourceType: "paper",
+        title: "Aqueous dopamine autoxidation / O₂ chemistry (qualitative context for ROS teaching)",
+        doi: "10.1039/P29950000259",
+        url: "https://doi.org/10.1039/P29950000259",
+        accessedAt: ACCESSED,
+        confidence: "high",
+      },
+      {
+        sourceName: "Frontiers in Molecular Neuroscience",
+        sourceType: "paper",
+        title: "pH dependence of dopamine autoxidation (mechanistic context)",
+        doi: "10.3389/fnmol.2018.00467",
+        url: "https://doi.org/10.3389/fnmol.2018.00467",
+        accessedAt: ACCESSED,
+        confidence: "high",
+      },
+    ],
+    naturalOccurrence: [
+      {
+        label: "Trace biogenic amines in plant or fermented foods (qualitative)",
+        dietaryRole:
+          "Dopamine can appear at trace levels in certain foods, but meaningful CNS dopaminergic signaling is not achieved by diet alone; peripheral metabolism and the blood–brain barrier limit dietary relevance compared with L-DOPA therapy.",
+        evidence:
+          "Treat any single food concentration as non-authoritative here—use FoodData Central for commodity-specific queries and primary literature for mechanism.",
+        citations: [usdaFoodDataCentralCite(), pubchemCite("681")],
+      },
     ],
   },
   {
@@ -131,7 +210,7 @@ export const SEED_COMPOUNDS: Compound[] = [
     hmdbId: "HMDB0000216",
     chebiId: "18357",
     endogenousRole:
-      "Catecholamine neurotransmitter and hormone; β-hydroxylated product of dopamine via DBH.",
+      "β-Hydroxylated catecholamine: DBH converts dopamine to norepinephrine inside vesicles using O₂, Cu(II), and ascorbate as reductant; NE is released, acts on adrenergic receptors, and is methylated by COMT to normetanephrine extracellularly.",
     citations: [
       pubchemCite("439260"),
       hmdbCite("HMDB0000216"),
@@ -147,7 +226,7 @@ export const SEED_COMPOUNDS: Compound[] = [
     hmdbId: "HMDB0000068",
     chebiId: "28918",
     endogenousRole:
-      "N-methylated catecholamine produced from norepinephrine by PNMT.",
+      "Adrenal medulla and selected CNS neurons use PNMT to N-methylate norepinephrine with SAM, yielding epinephrine; COMT converts extracellular epinephrine to metanephrine for clearance.",
     citations: [
       pubchemCite("5816"),
       hmdbCite("HMDB0000068"),
@@ -269,7 +348,7 @@ export const SEED_COMPOUNDS: Compound[] = [
     pubchemCid: "439316",
     chebiId: "57812",
     endogenousRole:
-      "Reactive ortho-quinone produced when tyrosinase oxidizes L-DOPA in melanocytes; precursor of dopachrome and downstream melanins.",
+      "Reactive o-quinone formed enzymatically from L-DOPA or L-tyrosine by tyrosinase in melanocytes (melanin branch). Dopamine can also be oxidised to aminochrome / quinone chemistry under autoxidation or metal-catalysed pathways in vitro; SysDope lumps non-enzymatic dopamine loss into this node for teaching only.",
     citations: [
       pubchemCite("439316"),
       chebiCite("57812"),
@@ -305,16 +384,27 @@ export const SEED_COMPOUNDS: Compound[] = [
     aliases: ["oxidative tone", "quinone load"],
     compoundClass: "simulation_state",
     endogenousRole:
-      "Educational aggregate used when MAO-A, MAO-B, COMT, and ALDH are all fully inhibited in the simulator: cytosolic and synaptic dopamine is slowly drained into this pool to represent spontaneous auto-oxidation / quinone chemistry that is no longer cleared enzymatically. This is not a calibrated chemical yield.",
+      "Pedagogical aggregate: SysDope routes a small fraction of cytosolic + synaptic dopamine toward a dopaquinone-like pool whenever the *modelled* enzymatic clearance capacity (MAO-B, COMT, plus ALDH/MAO-A weights in `dopamineModulation.ts`) is low relative to dopamine burden. " +
+      "The functional form is inspired by aqueous autoxidation studies reporting O₂-dependent oxidation and strong pH sensitivity (see DOIs on the dopamine compound card), but numeric outputs remain arbitrary relative simulation units—not moles, ng/mL, or patient-specific predictions.",
     citations: [
       educationalNodeCite("Auto-oxidation load"),
       {
-        sourceName: "NCBI Bookshelf",
-        sourceType: "database",
-        title: "StatPearls — physiology of catecholamines (context)",
-        url: "https://www.ncbi.nlm.nih.gov/books/NBK507713/",
+        sourceName: "Journal of the Chemical Society, Perkin Transactions 2",
+        sourceType: "paper",
+        title: "Spontaneous autoxidation of dopamine (kinetic context)",
+        doi: "10.1039/P29950000259",
+        url: "https://doi.org/10.1039/P29950000259",
         accessedAt: ACCESSED,
-        confidence: "low",
+        confidence: "high",
+      },
+      {
+        sourceName: "Frontiers in Molecular Neuroscience",
+        sourceType: "paper",
+        title: "Dopamine autoxidation is controlled by acidic pH",
+        doi: "10.3389/fnmol.2018.00467",
+        url: "https://doi.org/10.3389/fnmol.2018.00467",
+        accessedAt: ACCESSED,
+        confidence: "high",
       },
     ],
   },

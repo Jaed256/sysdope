@@ -32,7 +32,18 @@ export function SynapseMiniGame() {
         <h3 className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
           Synapse
         </h3>
-        <Button size="sm" variant="primary" onClick={() => release(1)}>
+        <Button
+          size="sm"
+          variant="primary"
+          type="button"
+          disabled={vesDA < 0.5}
+          title={
+            vesDA < 0.5
+              ? "Add vesicular dopamine (run the clock or adjust transporters) to release."
+              : "Move vesicular dopamine into the cleft (works while paused)."
+          }
+          onClick={() => release(1)}
+        >
           <Zap className="size-3" />
           Release
         </Button>
@@ -77,7 +88,8 @@ export function SynapseMiniGame() {
           </div>
         </div>
         <p className="mt-2 text-[10px] uppercase tracking-wider text-zinc-500">
-          Click receptors for citations · Release pushes vesicular DA into the cleft
+          Click receptors for citations · Release moves vesicular DA into the cleft
+          (works while paused). If Release is disabled, vesicular DA is too low.
         </p>
       </div>
     </div>

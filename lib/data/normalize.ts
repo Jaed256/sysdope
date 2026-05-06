@@ -137,7 +137,11 @@ export function mergeEnzymeSources(
     };
   }
 
-  return { ...out, citations: rankCitations(out.citations) };
+  return {
+    ...out,
+    reactionEquationLatex: seed.reactionEquationLatex ?? out.reactionEquationLatex,
+    citations: rankCitations(out.citations),
+  };
 }
 
 function mergeDiseases(

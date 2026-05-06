@@ -29,6 +29,76 @@ import {
 
 const HISTORY_BUFFER_LEN = 120;
 
+function appendCompoundHistory(
+  history: SimulationState["history"],
+  conc: Record<string, CompartmentMap>,
+): SimulationState["history"] {
+  const next = { ...history };
+  const trackedCompounds = new Set<string>([
+    ...Object.keys(next),
+    ...Object.keys(conc),
+  ]);
+  for (const cid of trackedCompounds) {
+    const totalAcrossCompartments = Object.values(conc[cid] ?? {}).reduce(
+      (sum, v) => sum + (v ?? 0),
+      0,
+    );
+    const buf = (next[cid] ?? []).concat(totalAcrossCompartments);
+    if (buf.length > HISTORY_BUFFER_LEN) {
+      buf.splice(0, buf.length - HISTORY_BUFFER_LEN);
+    }
+    next[cid] = buf;
+  }
+  return next;
+}
+
+/**
+ * Apply vesicle → cleft (DA) and vesicle → extracellular (NE) transfer
+ * immediately. Used by the UI release control so it works while the clock is
+ * paused; does not advance simulated time or recompute `lastFlux` (avoids
+ * blanking edge animations between ticks).
+ */
+export function applyVesicleReleaseDirect(
+  state: SimulationState,
+  releases: number,
+  inputs?: { releaseQuantum?: number },
+): SimulationState {
+  const n = Math.max(0, Math.floor(releases));
+  if (n <= 0) return state;
+
+  const releaseQuantum = inputs?.releaseQuantum ?? DEFAULT_RELEASE_QUANTUM;
+  const acc: Record<string, CompartmentMap> = {};
+  for (const [id, map] of Object.entries(state.concentrations)) {
+    acc[id] = { ...map };
+  }
+
+  const vesDA = acc.dopamine?.vesicle ?? 0;
+  const releasedDA = Math.min(vesDA, n * releaseQuantum);
+  if (releasedDA > 0) {
+    writeConc(acc, "dopamine", "vesicle", -releasedDA);
+    writeConc(acc, "dopamine", "synapse", releasedDA);
+  }
+  const vesNE = acc.norepinephrine?.vesicle ?? 0;
+  const releasedNE = Math.min(vesNE, n * releaseQuantum * 0.4);
+  if (releasedNE > 0) {
+    writeConc(acc, "norepinephrine", "vesicle", -releasedNE);
+    writeConc(acc, "norepinephrine", "extracellular", releasedNE);
+  }
+
+  const history = appendCompoundHistory(state.history, acc);
+
+  return {
+    ...state,
+    concentrations: acc,
+    history,
+    pendingReleases: 0,
+    eventLog: [
+      ...state.eventLog,
+      `t=${state.time} manual vesicle release ×${n}`,
+    ].slice(-200),
+  };
+}
+
 export type TickInputs = {
   reactions: Reaction[];
   enzymes: Enzyme[];
@@ -295,19 +365,10 @@ export function tick(state: SimulationState, inputs: TickInputs): SimulationStat
   }
   if (eventLog.length > 200) eventLog.splice(0, eventLog.length - 200);
 
-  const history = { ...state.history };
-  const trackedCompounds = new Set<string>([
-    ...Object.keys(state.history),
-    ...Object.keys(intermediate.concentrations),
-  ]);
-  for (const cid of trackedCompounds) {
-    const totalAcrossCompartments = Object.values(
-      intermediate.concentrations[cid] ?? {},
-    ).reduce((sum, v) => sum + (v ?? 0), 0);
-    const buf = (history[cid] ?? []).concat(totalAcrossCompartments);
-    if (buf.length > HISTORY_BUFFER_LEN) buf.splice(0, buf.length - HISTORY_BUFFER_LEN);
-    history[cid] = buf;
-  }
+  const history = appendCompoundHistory(
+    state.history,
+    intermediate.concentrations,
+  );
 
   return {
     ...intermediate,

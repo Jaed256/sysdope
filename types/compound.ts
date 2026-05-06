@@ -12,6 +12,8 @@ export type CompoundClass =
 
 export type NaturalOccurrence = {
   label: string;
+  /** Nutritional / biosynthetic role in plain language (still cite specifics below). */
+  dietaryRole?: string;
   evidence: string;
   citations: Citation[];
 };

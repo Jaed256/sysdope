@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createInitialState, tick } from "@/lib/simulation/engine";
+import { createInitialState, tick, applyVesicleReleaseDirect } from "@/lib/simulation/engine";
 import { SEED_ENZYMES } from "@/lib/pathway/seedEnzymes";
 import { SEED_REACTIONS } from "@/lib/pathway/seedReactions";
 import type {
@@ -40,6 +40,18 @@ function totalAcrossCompartments(s: SimulationState, cid: string): number {
 }
 
 describe("simulation engine", () => {
+  it("applyVesicleReleaseDirect moves vesicular DA to synapse even when paused", () => {
+    const s = createInitialState({ enzymes: ENZYMES });
+    const paused = { ...s, paused: true };
+    const after = applyVesicleReleaseDirect(paused, 1);
+    expect(after.concentrations.dopamine?.synapse ?? 0).toBeGreaterThan(
+      s.concentrations.dopamine?.synapse ?? 0,
+    );
+    expect(after.concentrations.dopamine?.vesicle ?? 0).toBeLessThan(
+      s.concentrations.dopamine?.vesicle ?? 0,
+    );
+  });
+
   it("never produces negative concentrations across many ticks of a noisy scenario", () => {
     let state = makeState({
       conc: {

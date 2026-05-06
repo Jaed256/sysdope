@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "@xyflow/react/dist/style.css";
+@import "katex/dist/katex.min.css";
 
 @theme inline {
   --color-bg: #050507;
@@ -35,6 +36,12 @@ body {
     radial-gradient(circle at 90% 110%, rgba(34, 211, 238, 0.08), transparent 50%),
     #050507;
   min-height: 100vh;
+}
+
+/* KaTeX inherits dark-theme text (library defaults assume light paper). */
+.katex,
+.katex-html {
+  color: inherit;
 }
 
 /* React Flow theme overrides for the biotech aesthetic */

@@ -1,6 +1,6 @@
 /**
  * Citation describes where a piece of scientific information comes from.
- * Every Compound, Enzyme, Reaction, DiseaseAssociation, and FoodOccurrence
+ * Every Compound, Enzyme, Reaction, DiseaseAssociation, and natural-source row
  * displayed in the UI MUST include at least one Citation.
  *
  * Confidence ranking guideline:
