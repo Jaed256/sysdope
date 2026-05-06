@@ -4,6 +4,7 @@ import { useState } from "react";
 import { clsx } from "clsx";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { useSimulationStore } from "@/lib/simulation/store";
+import { useUIPreferences } from "@/lib/ui/preferencesStore";
 import { SEED_ENZYMES } from "@/lib/pathway/seedEnzymes";
 import type { EnzymeActivityLevel } from "@/types/simulation";
 
@@ -24,6 +25,7 @@ export function EnzymeControls() {
   const inhibitor = useSimulationStore((s) => s.inhibitorStrength);
   const setActivity = useSimulationStore((s) => s.setEnzymeActivity);
   const setInhibitor = useSimulationStore((s) => s.setInhibitorStrength);
+  const advanced = useUIPreferences((s) => s.mode) === "advanced";
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   return (
@@ -44,15 +46,20 @@ export function EnzymeControls() {
               <div className="flex items-center justify-between gap-2 px-2 py-1.5">
                 <button
                   type="button"
-                  onClick={() => setExpandedId(expanded ? null : e.id)}
-                  className="flex min-w-0 flex-1 items-center gap-1 text-left"
+                  onClick={() => advanced && setExpandedId(expanded ? null : e.id)}
+                  disabled={!advanced}
+                  className={clsx(
+                    "flex min-w-0 flex-1 items-center gap-1 text-left",
+                    !advanced && "cursor-default",
+                  )}
                   aria-label={`Toggle ${e.shortName} controls`}
                 >
-                  {expanded ? (
-                    <ChevronDown className="size-3 shrink-0 text-zinc-500" />
-                  ) : (
-                    <ChevronRight className="size-3 shrink-0 text-zinc-500" />
-                  )}
+                  {advanced &&
+                    (expanded ? (
+                      <ChevronDown className="size-3 shrink-0 text-zinc-500" />
+                    ) : (
+                      <ChevronRight className="size-3 shrink-0 text-zinc-500" />
+                    ))}
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-[11px] font-medium text-zinc-100">
                       {e.shortName ?? e.name}
@@ -84,7 +91,7 @@ export function EnzymeControls() {
                   ))}
                 </div>
               </div>
-              {expanded && (
+              {expanded && advanced && (
                 <div className="space-y-1.5 border-t border-zinc-800 px-2 py-2">
                   <div className="flex items-center justify-between text-[10px] uppercase tracking-wider text-zinc-400">
                     <label htmlFor={`inh-${e.id}`}>Inhibitor strength</label>
