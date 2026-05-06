@@ -97,10 +97,14 @@ export function CompoundDrawer() {
             {sources?.pubchem ? (
               <Badge variant="success">PubChem live</Badge>
             ) : (
-              <Badge variant="warning">PubChem unavailable</Badge>
+              <Badge variant="warning">PubChem offline</Badge>
             )}
-            {!sources?.chebi && <Badge variant="warning">ChEBI stub</Badge>}
-            {!sources?.hmdb && <Badge variant="warning">HMDB stub</Badge>}
+            {sources?.chebi ? (
+              <Badge variant="success">ChEBI live</Badge>
+            ) : (
+              <Badge variant="warning">ChEBI offline</Badge>
+            )}
+            <Badge variant="warning">HMDB stub</Badge>
           </div>
 
           {compound.structure2dUrl && (

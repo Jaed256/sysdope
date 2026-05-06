@@ -1,12 +1,20 @@
 import { NextResponse } from "next/server";
 import { findSeedCompound } from "@/lib/pathway/seedCompounds";
 import { getCompoundPropertiesByCid } from "@/lib/data/pubchem";
-import { mergeSeedWithPubChem } from "@/lib/data/normalize";
+import { getChebiEntry } from "@/lib/data/chebi";
+import { mergeCompoundSources } from "@/lib/data/normalize";
 
 export const runtime = "nodejs";
 
 type Params = { params: Promise<{ id: string }> };
 
+/**
+ * Returns a compound enriched in parallel from PubChem (chem identifiers) and
+ * ChEBI (definition + redundant chem identifiers used as fallback). Both
+ * external calls are independently graceful: if either is unreachable or
+ * schema-mismatched the response still returns the seed compound and reports
+ * `sources.{pubchem,chebi}: false`.
+ */
 export async function GET(_req: Request, { params }: Params) {
   const { id } = await params;
   const seed = findSeedCompound(id);
@@ -17,22 +25,19 @@ export async function GET(_req: Request, { params }: Params) {
     );
   }
 
-  let merged = seed;
-  let pubchemOk = false;
-  if (seed.pubchemCid) {
-    const live = await getCompoundPropertiesByCid(seed.pubchemCid);
-    if (live) {
-      merged = mergeSeedWithPubChem(seed, live);
-      pubchemOk = true;
-    }
-  }
+  const [pubchem, chebi] = await Promise.all([
+    seed.pubchemCid ? getCompoundPropertiesByCid(seed.pubchemCid) : Promise.resolve(null),
+    seed.chebiId ? getChebiEntry(seed.chebiId) : Promise.resolve(null),
+  ]);
+
+  const merged = mergeCompoundSources(seed, pubchem, chebi);
 
   return NextResponse.json({
     compound: merged,
     sources: {
       seed: true,
-      pubchem: pubchemOk,
-      chebi: false,
+      pubchem: pubchem !== null,
+      chebi: chebi !== null,
       hmdb: false,
     },
   });

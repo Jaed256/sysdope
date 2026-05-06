@@ -6,18 +6,21 @@ export const runtime = "nodejs";
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const q = searchParams.get("q") ?? "";
-  if (!q) {
+  const limitRaw = searchParams.get("limit");
+  const limit = limitRaw ? Math.min(25, Math.max(1, Number(limitRaw))) : 10;
+
+  if (!q.trim()) {
     return NextResponse.json(
-      { error: "missing_query", note: "Provide ?q=" },
+      { error: "missing_query", note: "Provide ?q=<terms>&limit=<1-25>" },
       { status: 400 },
     );
   }
-  const results = await searchLiterature(q, { limit: 10 });
+
+  const results = await searchLiterature(q, { limit });
   return NextResponse.json({
+    query: q,
+    count: results.length,
     results,
-    note:
-      results.length === 0
-        ? "literature adapter is a Phase 1 stub; wire Europe PMC / PubMed E-utilities to enable"
-        : undefined,
+    source: "Europe PMC",
   });
 }

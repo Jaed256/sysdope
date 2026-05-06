@@ -9,6 +9,7 @@ import { SimulationControls } from "@/components/panels/SimulationControls";
 import { AlertCenter } from "@/components/panels/AlertCenter";
 import { ScenarioCards } from "@/components/panels/ScenarioCards";
 import { LabNotebook } from "@/components/panels/LabNotebook";
+import { LiteraturePanel } from "@/components/panels/LiteraturePanel";
 import { CompoundDrawer } from "@/components/panels/CompoundDrawer";
 import { EnzymeDrawer } from "@/components/panels/EnzymeDrawer";
 import { PrecursorTray } from "@/components/pathway/PrecursorTray";
@@ -41,6 +42,7 @@ export function PlayWorkspace() {
         <aside className="z-20 flex w-[300px] shrink-0 flex-col gap-3 overflow-y-auto border-l border-zinc-800/80 bg-zinc-950/40 p-3">
           <EnzymeControls />
           <ScenarioCards />
+          <LiteraturePanel />
           <LabNotebook />
         </aside>
       </div>

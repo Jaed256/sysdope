@@ -9,18 +9,53 @@ import { foodSourcesHealth } from "@/lib/data/foodSources";
 
 export const runtime = "nodejs";
 
-type HealthEntry = { source: string; ok: boolean; latencyMs: number };
+type AdapterStatus = "live" | "stub";
+
+type HealthEntry = {
+  source: string;
+  status: AdapterStatus;
+  ok: boolean;
+  latencyMs: number;
+  note?: string;
+};
+
+const ADAPTERS: {
+  source: string;
+  status: AdapterStatus;
+  check: () => Promise<{ ok: boolean; latencyMs: number }>;
+  note?: string;
+}[] = [
+  { source: "pubchem", status: "live", check: pubchemHealth },
+  { source: "uniprot", status: "live", check: uniprotHealth },
+  { source: "rhea", status: "live", check: rheaHealth },
+  { source: "chebi", status: "live", check: chebiHealth },
+  { source: "literature", status: "live", check: literatureHealth },
+  {
+    source: "hmdb",
+    status: "stub",
+    check: hmdbHealth,
+    note: "no public JSON REST; stays a stub until bulk import is wired in Phase 4",
+  },
+  {
+    source: "foodSources",
+    status: "stub",
+    check: foodSourcesHealth,
+    note: "USDA FoodData Central requires an API key; stub until provisioned",
+  },
+];
 
 export async function GET() {
-  const checks = await Promise.all([
-    pubchemHealth().then((r) => ({ source: "pubchem", ...r })),
-    rheaHealth().then((r) => ({ source: "rhea", ...r })),
-    uniprotHealth().then((r) => ({ source: "uniprot", ...r })),
-    chebiHealth().then((r) => ({ source: "chebi", ...r })),
-    hmdbHealth().then((r) => ({ source: "hmdb", ...r })),
-    literatureHealth().then((r) => ({ source: "literature", ...r })),
-    foodSourcesHealth().then((r) => ({ source: "foodSources", ...r })),
-  ]);
-  const sources: HealthEntry[] = checks;
+  const sources: HealthEntry[] = await Promise.all(
+    ADAPTERS.map(async (a) => {
+      const r = await a.check();
+      return {
+        source: a.source,
+        status: a.status,
+        ok: r.ok,
+        latencyMs: r.latencyMs,
+        ...(a.note ? { note: a.note } : {}),
+      };
+    }),
+  );
   return NextResponse.json({ sources, checkedAt: new Date().toISOString() });
 }

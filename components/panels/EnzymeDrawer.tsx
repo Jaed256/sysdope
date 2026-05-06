@@ -8,8 +8,13 @@ import { Badge } from "@/components/ui/Badge";
 import { CitationList } from "@/components/ui/CitationList";
 import type { Enzyme } from "@/types/enzyme";
 
+type EnrichedEnzyme = Enzyme & {
+  catalyticActivities?: { name: string; ecNumber?: string; rheaId?: string }[];
+  relatedReactions?: { equation?: string; rheaId: string; ecNumbers: string[] }[];
+};
+
 type ApiResponse = {
-  enzyme: Enzyme;
+  enzyme: EnrichedEnzyme;
   sources: { seed: boolean; uniprot: boolean; rhea: boolean };
 };
 
@@ -86,8 +91,12 @@ export function EnzymeDrawer() {
         <div className="space-y-5">
           <div className="flex flex-wrap gap-1.5">
             <Badge variant="info">Seed</Badge>
-            <Badge variant="warning">UniProt stub</Badge>
-            <Badge variant="warning">Rhea stub</Badge>
+            <Badge variant={data?.sources.uniprot ? "success" : "warning"}>
+              {data?.sources.uniprot ? "UniProt live" : "UniProt offline"}
+            </Badge>
+            <Badge variant={data?.sources.rhea ? "success" : "warning"}>
+              {data?.sources.rhea ? "Rhea live" : "Rhea offline"}
+            </Badge>
           </div>
 
           <section>
@@ -136,6 +145,36 @@ export function EnzymeDrawer() {
               </div>
             )}
           </section>
+
+          {enzyme.relatedReactions && enzyme.relatedReactions.length > 0 && (
+            <section>
+              <h3 className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
+                Related Rhea reactions
+              </h3>
+              <ul className="space-y-1.5">
+                {enzyme.relatedReactions.map((r) => (
+                  <li
+                    key={r.rheaId}
+                    className="rounded-md bg-zinc-900/40 p-2 ring-1 ring-zinc-800"
+                  >
+                    <a
+                      href={`https://www.rhea-db.org/rhea/${r.rheaId}`}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="text-[10px] uppercase tracking-wider text-fuchsia-300 hover:text-fuchsia-200"
+                    >
+                      Rhea {r.rheaId}
+                    </a>
+                    {r.equation && (
+                      <p className="mt-0.5 break-words text-[11px] text-zinc-200">
+                        {r.equation}
+                      </p>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
 
           {enzyme.diseases && enzyme.diseases.length > 0 && (
             <section>

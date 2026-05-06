@@ -5,7 +5,7 @@
 
 SysDope is an interactive, citation-backed simulator for the dopamine pathway: synthesis from phenylalanine and tyrosine, vesicular handling via VMAT2, synaptic release at D1–D5 receptors, DAT reuptake, MAO/COMT/ALDH degradation, and the HVA urinary endpoint.
 
-It is built as both a **portfolio project** and an **educational mini-game**. Click any molecule or enzyme on the pathway and a side drawer shows live data from PubChem (and stub adapters for Rhea, UniProt, ChEBI, HMDB, Europe PMC, USDA FoodData Central) — with citations.
+It is built as both a **portfolio project** and an **educational mini-game**. Click any molecule or enzyme on the pathway and a side drawer shows live data from PubChem, UniProt, Rhea, and ChEBI — with citations. A literature search panel queries Europe PMC live. HMDB and USDA FoodData Central remain documented stubs (see Adapter status below).
 
 ## What you can do
 
@@ -54,10 +54,10 @@ app/
   api/
     pathway/             seed graph
     compounds/[id]/      seed + live PubChem (merged via normalize.ts)
-    enzymes/[id]/        seed (UniProt/Rhea adapters are stubs)
-    reactions/[id]/      seed (Rhea adapter is a stub)
-    literature/search/   stub returning []
-    sources/health/      pings every adapter
+    enzymes/[id]/        seed merged with live UniProt + Rhea (by EC)
+    reactions/[id]/      seed + live Rhea reactions for the enzyme's EC
+    literature/search/   live Europe PMC search (?q=, ?limit=)
+    sources/health/      pings every adapter; reports live vs stub status
 
 components/
   landing/               NavBar, Hero, FeatureGrid, DisclaimerBanner
@@ -74,7 +74,9 @@ lib/
   pathway/graph.ts       builds React Flow nodes/edges from seeds
   simulation/            kinetics, engine tick, alerts, scenarios, store
   data/                  pubchem (live), rhea/uniprot/chebi/hmdb/
-                         literature/foodSources (stubs), normalize
+                         literature (Europe PMC live)
+                         hmdb / foodSources (documented stubs)
+                         normalize (merge seed + live)
   citations/             source-ranking and bestCitation()
 
 types/                   canonical Compound, Enzyme, Reaction, Citation,
@@ -100,14 +102,14 @@ Citation ranking lives in [`lib/citations/sourceRanking.ts`](lib/citations/sourc
 | Source                    | Status | Notes |
 |---------------------------|--------|-------|
 | PubChem                   | live   | PUG-REST: IUPAC, formula, MW, SMILES, InChIKey, image, synonyms. Cached 24h via Next `fetch` `revalidate`. |
-| Rhea                      | stub   | Replace `lib/data/rhea.ts` body with a REST fetch + Zod validation. |
-| UniProt                   | stub   | Replace `lib/data/uniprot.ts` body with `/uniprotkb/<id>.json` + Zod. |
-| ChEBI                     | stub   | OLS4 or ChEBI web services. |
-| HMDB                      | stub   | Free use requires the XML dump under HMDB license. |
-| Europe PMC / PubMed       | stub   | Wire one of E-utilities, Europe PMC, Semantic Scholar, OpenAlex. |
-| USDA FoodData Central     | stub   | Source-backed natural-occurrence claims only. |
+| UniProt                   | live   | `https://rest.uniprot.org/uniprotkb/<accession>.json` — protein name, gene symbol, EC number, function, catalytic activity (with Rhea cross-refs), subcellular location, disease comments. Zod-validated, 24h cache. |
+| Rhea                      | live   | `https://www.rhea-db.org/rhea?query=...&format=json` — fetched both by Rhea ID and by EC number for the enzyme drawer. Zod-validated, 24h cache. |
+| ChEBI                     | live   | EBI OLS4 API (`/ontologies/chebi/terms?obo_id=CHEBI:<id>`) — definition, formula, SMILES, InChI fallbacks. Zod-validated, 24h cache. |
+| Europe PMC                | live   | `/europepmc/webservices/rest/search` — title, abstract, PMID, DOI, journal, year. Backs the in-app Literature search panel. Zod-validated, 6h cache. |
+| HMDB                      | stub   | No public JSON REST. The intended Phase 4 path is to download the bulk XML dataset, transform once at build time, and serve a static index. See `lib/data/hmdb.ts` header for details. |
+| USDA FoodData Central     | stub   | Requires an API key. Wire when key is provisioned. |
 
-`/api/sources/health` pings every source and returns `{ source, ok, latencyMs }[]`.
+`/api/sources/health` pings every source and returns `{ source, status, ok, latencyMs, note? }[]`. The `status` field distinguishes `live` adapters from documented `stub`s.
 
 ## Scientific limitations
 
@@ -153,9 +155,9 @@ vercel deploy --prod # production
 
 ## Roadmap
 
-- **Phase 2** — richer kinetics, more compartments, scenario presets, particle layer with actual molecule animation along edges.
-- **Phase 3** — wire Rhea / UniProt / ChEBI / HMDB / Europe PMC / USDA adapters through the same `normalize.ts` layer.
-- **Phase 4** — guided lessons (TH bottleneck, MAO inhibition, ALDH protects against DOPAL, VMAT2 sequestration, DAT and synaptic duration, COMT and HVA), tooltips for cofactors (BH4, iron, PLP/B6, SAM, FAD, NAD+, copper, oxygen, ascorbate), beginner / advanced mode, citations toggle.
+- **Phase 2** ✅ — kinetic-config extraction, inhibitor strength dial, BH4/SAM/NAD+ cofactor pools, adaptive substepping, real flux particles, layout pass, combo scenarios.
+- **Phase 3** ✅ — live UniProt, Rhea, ChEBI, and Europe PMC adapters with Zod validation, per-source caching, graceful fallback, in-app literature search panel, and a sources health endpoint that distinguishes live vs documented-stub adapters.
+- **Phase 4** — guided lessons (TH bottleneck, MAO inhibition, ALDH protects against DOPAL, VMAT2 sequestration, DAT and synaptic duration, COMT and HVA), tooltips for cofactors, beginner / advanced mode, citations toggle, HMDB bulk-import pipeline.
 - **Phase 5** — portfolio polish: animated previews, expanded `/about` and `/docs`, screenshots.
 
 ## License
