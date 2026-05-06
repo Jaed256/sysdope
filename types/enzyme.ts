@@ -26,6 +26,8 @@ export type Enzyme = {
   cofactors?: string[];
   subcellularLocation?: string;
   reactionEquation?: string;
+  /** Optional companion LaTeX line for the same net transformation (ASCII-only UI may show Unicode instead). */
+  reactionEquationLatex?: string;
   diseases?: DiseaseAssociation[];
   inhibitionEffect?: string;
   upregulationEffect?: string;
