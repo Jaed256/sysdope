@@ -10,12 +10,16 @@ import { AlertCenter } from "@/components/panels/AlertCenter";
 import { ScenarioCards } from "@/components/panels/ScenarioCards";
 import { LabNotebook } from "@/components/panels/LabNotebook";
 import { LiteraturePanel } from "@/components/panels/LiteraturePanel";
+import { SettingsPanel } from "@/components/panels/SettingsPanel";
 import { CompoundDrawer } from "@/components/panels/CompoundDrawer";
 import { EnzymeDrawer } from "@/components/panels/EnzymeDrawer";
 import { PrecursorTray } from "@/components/pathway/PrecursorTray";
 import { SynapseMiniGame } from "@/components/pathway/SynapseMiniGame";
+import { useUIPreferences } from "@/lib/ui/preferencesStore";
 
 export function PlayWorkspace() {
+  const advanced = useUIPreferences((s) => s.mode) === "advanced";
+
   return (
     <div className="flex h-screen flex-col">
       <NavBar />
@@ -24,7 +28,7 @@ export function PlayWorkspace() {
         {/* Left rail */}
         <aside className="z-20 flex w-[300px] shrink-0 flex-col gap-3 overflow-y-auto border-r border-zinc-800/80 bg-zinc-950/40 p-3">
           <LevelsDashboard />
-          <CofactorPanel />
+          {advanced && <CofactorPanel />}
           <PrecursorTray />
           <SynapseMiniGame />
         </aside>
@@ -34,6 +38,7 @@ export function PlayWorkspace() {
           <div className="absolute left-1/2 top-3 z-10 -translate-x-1/2">
             <SimulationControls />
           </div>
+          <SettingsPanel />
           <AlertCenter />
           <PathwayCanvas />
         </section>

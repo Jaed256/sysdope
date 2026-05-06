@@ -6,6 +6,8 @@ import { useSimulationStore } from "@/lib/simulation/store";
 import { Drawer } from "@/components/ui/Drawer";
 import { Badge } from "@/components/ui/Badge";
 import { CitationList } from "@/components/ui/CitationList";
+import { CofactorChip } from "@/components/ui/CofactorChip";
+import { useUIPreferences } from "@/lib/ui/preferencesStore";
 import type { Enzyme } from "@/types/enzyme";
 
 type EnrichedEnzyme = Enzyme & {
@@ -37,6 +39,7 @@ const Field = ({
 export function EnzymeDrawer() {
   const drawer = useSimulationStore((s) => s.drawer);
   const close = useSimulationStore((s) => s.closeDrawer);
+  const showCitations = useUIPreferences((s) => s.showCitations);
   const open = drawer?.kind === "enzyme";
   const id = drawer?.kind === "enzyme" ? drawer.targetId : null;
 
@@ -108,12 +111,23 @@ export function EnzymeDrawer() {
               <Field label="Protein" value={enzyme.proteinName} />
               <Field label="EC number" value={enzyme.ecNumber} />
               <Field label="UniProt" value={enzyme.uniprotId} />
-              <Field
-                label="Cofactors"
-                value={enzyme.cofactors?.join(" · ")}
-              />
               <Field label="Compartment" value={enzyme.subcellularLocation} />
             </dl>
+            {enzyme.cofactors && enzyme.cofactors.length > 0 && (
+              <div className="mt-2">
+                <p className="mb-1 text-[10px] uppercase tracking-wider text-zinc-500">
+                  Cofactors
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {enzyme.cofactors.map((c) => (
+                    <CofactorChip key={c} label={c} />
+                  ))}
+                </div>
+                <p className="mt-1 text-[10px] text-zinc-500">
+                  Hover a chip for the cofactor&apos;s role and citations.
+                </p>
+              </div>
+            )}
           </section>
 
           {enzyme.reactionEquation && (
@@ -197,12 +211,14 @@ export function EnzymeDrawer() {
             </section>
           )}
 
-          <section>
-            <h3 className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
-              Citations
-            </h3>
-            <CitationList citations={enzyme.citations} />
-          </section>
+          {showCitations && (
+            <section>
+              <h3 className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
+                Citations
+              </h3>
+              <CitationList citations={enzyme.citations} />
+            </section>
+          )}
         </div>
       )}
     </Drawer>

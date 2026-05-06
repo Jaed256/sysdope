@@ -7,6 +7,7 @@ import { useSimulationStore } from "@/lib/simulation/store";
 import { Drawer } from "@/components/ui/Drawer";
 import { Badge } from "@/components/ui/Badge";
 import { CitationList } from "@/components/ui/CitationList";
+import { useUIPreferences } from "@/lib/ui/preferencesStore";
 import type { Compound } from "@/types/compound";
 
 type ApiResponse = {
@@ -39,6 +40,7 @@ const Field = ({
 export function CompoundDrawer() {
   const drawer = useSimulationStore((s) => s.drawer);
   const close = useSimulationStore((s) => s.closeDrawer);
+  const showCitations = useUIPreferences((s) => s.showCitations);
   const open = drawer?.kind === "compound";
   const id = drawer?.kind === "compound" ? drawer.targetId : null;
 
@@ -182,12 +184,14 @@ export function CompoundDrawer() {
             )}
           </section>
 
-          <section>
-            <h3 className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
-              Citations
-            </h3>
-            <CitationList citations={compound.citations} />
-          </section>
+          {showCitations && (
+            <section>
+              <h3 className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
+                Citations
+              </h3>
+              <CitationList citations={compound.citations} />
+            </section>
+          )}
         </div>
       )}
     </Drawer>
