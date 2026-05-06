@@ -142,12 +142,12 @@ export function EnzymeDrawer() {
                 Reaction catalyzed
               </h3>
               {effectiveRxLatex ? (
-                <div className="overflow-x-auto rounded-md bg-zinc-950/80 px-2 py-3 ring-1 ring-zinc-800/80">
+                <div className="isolate overflow-x-auto rounded-md bg-zinc-950/80 px-2 py-3 text-[1rem] leading-normal ring-1 ring-zinc-800/80 [&_.katex]:text-inherit">
                   <KaTeXBlock
                     key={`${enzyme.id}-katex-rx`}
                     latex={effectiveRxLatex}
                     displayMode
-                    className="katex-wrap text-zinc-100 [&_.katex]:text-zinc-100 [&_.katex-display]:m-0"
+                    className="katex-wrap text-zinc-100 [&_.katex]:!text-inherit [&_.katex-display]:m-0"
                   />
                 </div>
               ) : (

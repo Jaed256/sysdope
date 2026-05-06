@@ -99,12 +99,12 @@ export function EnzymeFluxSection({ enzymeId }: Props) {
                   {r.id}
                 </p>
                 {r.equationLatex ? (
-                  <div className="mt-0.5 overflow-x-auto py-0.5">
+                  <div className="isolate mt-0.5 overflow-x-auto py-0.5 text-[0.95rem] leading-normal [&_.katex]:text-inherit">
                     <KaTeXBlock
                       key={`${r.id}-eq`}
                       latex={r.equationLatex}
                       displayMode={false}
-                      className="text-[11px] text-zinc-200 [&_.katex]:text-inherit"
+                      className="text-[11px] text-zinc-200 [&_.katex]:!text-inherit"
                     />
                   </div>
                 ) : (

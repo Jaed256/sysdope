@@ -1,7 +1,7 @@
 "use client";
 
 import katex from "katex";
-import { useEffect, useRef } from "react";
+import { useLayoutEffect, useRef } from "react";
 
 type Props = {
   /** LaTeX math string (not wrapped in delimiters). */
@@ -21,7 +21,7 @@ export function KaTeXBlock({
 }: Props) {
   const ref = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
     el.innerHTML = "";

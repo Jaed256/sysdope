@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "prepare": "node scripts/prepare-katex.mjs",
+    "prebuild": "node scripts/prepare-katex.mjs",
+    "predev": "node scripts/prepare-katex.mjs",
+    "pretest": "node scripts/prepare-katex.mjs",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",

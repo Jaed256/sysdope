@@ -17,6 +17,9 @@
 /.next/
 /out/
 
+# generated KaTeX static assets (see scripts/prepare-katex.mjs)
+/public/katex/
+
 # production
 /build
 
