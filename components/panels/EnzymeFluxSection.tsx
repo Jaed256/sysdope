@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { useSimulationStore } from "@/lib/simulation/store";
 import { SEED_REACTIONS } from "@/lib/pathway/seedReactions";
+import { KaTeXBlock } from "@/components/ui/KaTeXBlock";
 import {
   dopamineEnzymaticOxidationShield,
   enzymeEffectiveMultiplier,
@@ -97,11 +98,22 @@ export function EnzymeFluxSection({ enzymeId }: Props) {
                 <p className="text-[10px] uppercase tracking-wider text-zinc-500">
                   {r.id}
                 </p>
-                {r.equation && (
-                  <p className="mt-0.5 text-[11px] text-zinc-300">{r.equation}</p>
+                {r.equationLatex ? (
+                  <div className="mt-0.5 overflow-x-auto py-0.5">
+                    <KaTeXBlock
+                      key={`${r.id}-eq`}
+                      latex={r.equationLatex}
+                      displayMode={false}
+                      className="text-[11px] text-zinc-200 [&_.katex]:text-inherit"
+                    />
+                  </div>
+                ) : (
+                  r.equation && (
+                    <p className="mt-0.5 text-[11px] text-zinc-300">{r.equation}</p>
+                  )
                 )}
                 <p className="mt-1 text-xs tabular-nums text-zinc-100">
-                  |flux| this step: {Math.abs(f).toFixed(3)}
+                  Rate (|flux|) this step: {Math.abs(f).toFixed(3)}
                 </p>
               </li>
             );
@@ -117,7 +129,7 @@ export function EnzymeFluxSection({ enzymeId }: Props) {
 
       {rows.length > 0 && (
         <p className="mt-2 text-[10px] text-zinc-500">
-          Sum of |flux| across mapped reactions:{" "}
+          Sum of |flux| (total modeled rate magnitude) this step:{" "}
           <span className="font-medium tabular-nums text-zinc-300">
             {totalFlux.toFixed(3)}
           </span>

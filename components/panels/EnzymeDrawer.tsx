@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/Badge";
 import { CitationList } from "@/components/ui/CitationList";
 import { CofactorChip } from "@/components/ui/CofactorChip";
 import { KaTeXBlock } from "@/components/ui/KaTeXBlock";
+import { findSeedEnzyme } from "@/lib/pathway/seedEnzymes";
 import { EnzymeFluxSection } from "@/components/panels/EnzymeFluxSection";
 import { useUIPreferences } from "@/lib/ui/preferencesStore";
 import type { Enzyme } from "@/types/enzyme";
@@ -73,6 +74,9 @@ export function EnzymeDrawer() {
   }, [id]);
 
   const enzyme = data?.enzyme;
+  const effectiveRxLatex =
+    enzyme?.reactionEquationLatex ??
+    (enzyme ? findSeedEnzyme(enzyme.id)?.reactionEquationLatex : undefined);
 
   return (
     <Drawer
@@ -132,16 +136,16 @@ export function EnzymeDrawer() {
             )}
           </section>
 
-          {(enzyme.reactionEquation || enzyme.reactionEquationLatex) && (
+          {(enzyme.reactionEquation || effectiveRxLatex) && (
             <section>
               <h3 className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
                 Reaction catalyzed
               </h3>
-              {enzyme.reactionEquationLatex ? (
+              {effectiveRxLatex ? (
                 <div className="overflow-x-auto rounded-md bg-zinc-950/80 px-2 py-3 ring-1 ring-zinc-800/80">
                   <KaTeXBlock
                     key={`${enzyme.id}-katex-rx`}
-                    latex={enzyme.reactionEquationLatex}
+                    latex={effectiveRxLatex}
                     displayMode
                     className="katex-wrap text-zinc-100 [&_.katex]:text-zinc-100 [&_.katex-display]:m-0"
                   />
@@ -153,7 +157,7 @@ export function EnzymeDrawer() {
                   </pre>
                 )
               )}
-              {enzyme.reactionEquationLatex && enzyme.reactionEquation && (
+              {effectiveRxLatex && enzyme.reactionEquation && (
                 <pre className="mt-2 overflow-x-auto rounded-md bg-zinc-900/40 p-2 font-mono text-[10px] leading-snug text-zinc-400 ring-1 ring-zinc-800/60">
                   Unicode / text form: {enzyme.reactionEquation}
                 </pre>

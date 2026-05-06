@@ -24,6 +24,13 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+      <head>
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body className="min-h-screen bg-[#050507] text-zinc-100 antialiased">
         <DisclaimerBanner />
         {children}
