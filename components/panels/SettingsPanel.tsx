@@ -19,9 +19,13 @@ export function SettingsPanel() {
   const [hydrated, setHydrated] = useState(false);
   const mode = useUIPreferences((s) => s.mode);
   const showCitations = useUIPreferences((s) => s.showCitations);
+  const illustrativeNm = useUIPreferences((s) => s.illustrativeExtracellularDaNm);
   const disclaimerDismissed = useUIPreferences((s) => s.disclaimerDismissed);
   const setMode = useUIPreferences((s) => s.setMode);
   const setShowCitations = useUIPreferences((s) => s.setShowCitations);
+  const setIllustrativeExtracellularDaNm = useUIPreferences(
+    (s) => s.setIllustrativeExtracellularDaNm,
+  );
   const restoreDisclaimer = useUIPreferences((s) => s.restoreDisclaimer);
 
   // Avoid SSR/CSR mismatch flash from persisted preferences.
@@ -102,6 +106,25 @@ export function SettingsPanel() {
                 checked={hydrated ? showCitations : true}
                 onChange={(e) => setShowCitations(e.target.checked)}
                 className="mt-0.5 size-4 accent-fuchsia-400"
+              />
+            </label>
+
+            <label className="flex cursor-pointer items-start justify-between gap-2 rounded-md bg-zinc-900/40 p-2 ring-1 ring-zinc-800">
+              <span className="flex flex-col">
+                <span className="flex items-center gap-1 text-[11px] font-medium text-zinc-200">
+                  Illustrative synaptic DA (nM)
+                </span>
+                <span className="mt-0.5 text-[10px] leading-snug text-zinc-500">
+                  Adds a literature-anchored nanomolar column for synaptic
+                  dopamine only. The engine still runs in relative units; nM is a
+                  fixed linear mapping (rat microdialysis context, PMID 15606895).
+                </span>
+              </span>
+              <input
+                type="checkbox"
+                checked={hydrated ? illustrativeNm : false}
+                onChange={(e) => setIllustrativeExtracellularDaNm(e.target.checked)}
+                className="mt-0.5 size-4 accent-cyan-400"
               />
             </label>
 

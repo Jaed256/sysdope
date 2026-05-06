@@ -1,6 +1,8 @@
 "use client";
 
 import { useSimulationStore } from "@/lib/simulation/store";
+import { illustrativeExtracellularDopamineNm } from "@/lib/education/physiologicDisplay";
+import { useUIPreferences } from "@/lib/ui/preferencesStore";
 import { Sparkline } from "./Sparkline";
 
 type LevelRow = {
@@ -31,10 +33,15 @@ const LEVELS: LevelRow[] = [
   { id: "hva", label: "HVA / urine", color: "#fcd34d" },
 ];
 
+function isSynapticDopamineRow(row: LevelRow): boolean {
+  return row.id === "dopamine" && Boolean(row.compartments?.includes("synapse"));
+}
+
 export function LevelsDashboard() {
   const concentrations = useSimulationStore((s) => s.concentrations);
   const history = useSimulationStore((s) => s.history);
   const time = useSimulationStore((s) => s.time);
+  const illustrativeNm = useUIPreferences((s) => s.illustrativeExtracellularDaNm);
 
   return (
     <div className="glass w-full max-w-xs rounded-xl p-3">
@@ -47,7 +54,16 @@ export function LevelsDashboard() {
         </span>
       </div>
       <p className="mb-2 text-[10px] leading-relaxed text-zinc-500">
-        Relative simulation units. Not clinical values.
+        Primary column: <span className="text-zinc-400">relative simulation units</span>
+        {illustrativeNm ? (
+          <>
+            . Synaptic DA also shows an{" "}
+            <span className="text-cyan-300">illustrative nM</span> readout (rat
+            microdialysis anchor, PMID 15606895) — not a fitted patient assay.
+          </>
+        ) : (
+          <> (engine). Toggle illustrative nM in Settings.</>
+        )}
       </p>
       <ul className="space-y-1.5">
         {LEVELS.map((row, idx) => {
@@ -55,8 +71,9 @@ export function LevelsDashboard() {
           const value = row.compartments
             ? row.compartments.reduce((s, k) => s + (map[k as keyof typeof map] ?? 0), 0)
             : Object.values(map).reduce((s, v) => s + (v ?? 0), 0);
-          // history is total-across-compartments per compound
           const buf = history[row.id] ?? [];
+          const showNm = illustrativeNm && isSynapticDopamineRow(row);
+          const nm = showNm ? illustrativeExtracellularDopamineNm(value) : null;
           return (
             <li
               key={`${row.id}-${row.label}-${idx}`}
@@ -71,9 +88,16 @@ export function LevelsDashboard() {
                 </p>
               </div>
               <Sparkline values={buf} stroke={row.color ?? "#e879f9"} width={64} height={18} />
-              <span className="w-10 text-right text-xs tabular-nums text-zinc-200">
-                {value.toFixed(0)}
-              </span>
+              <div className="flex shrink-0 flex-col items-end gap-0.5">
+                <span className="w-12 text-right text-xs tabular-nums text-zinc-200">
+                  {value.toFixed(0)}
+                </span>
+                {showNm && nm !== null && (
+                  <span className="text-[9px] tabular-nums text-cyan-300" title="Illustrative EC DA (nM)">
+                    ≈{nm.toFixed(1)} nM
+                  </span>
+                )}
+              </div>
             </li>
           );
         })}

@@ -7,6 +7,7 @@ import { Drawer } from "@/components/ui/Drawer";
 import { Badge } from "@/components/ui/Badge";
 import { CitationList } from "@/components/ui/CitationList";
 import { CofactorChip } from "@/components/ui/CofactorChip";
+import { KaTeXBlock } from "@/components/ui/KaTeXBlock";
 import { useUIPreferences } from "@/lib/ui/preferencesStore";
 import type { Enzyme } from "@/types/enzyme";
 
@@ -138,6 +139,20 @@ export function EnzymeDrawer() {
               <pre className="overflow-x-auto rounded-md bg-zinc-900/60 p-2 font-mono text-[11px] leading-snug text-zinc-100 ring-1 ring-zinc-800">
                 {enzyme.reactionEquation}
               </pre>
+              {enzyme.reactionEquationLatex && (
+                <div className="mt-2 space-y-1">
+                  <p className="text-[10px] uppercase tracking-wider text-zinc-500">
+                    Reaction (KaTeX)
+                  </p>
+                  <div className="overflow-x-auto rounded-md bg-zinc-950/80 px-2 py-2 ring-1 ring-zinc-800/80">
+                    <KaTeXBlock
+                      latex={enzyme.reactionEquationLatex}
+                      displayMode
+                      className="text-[11px] text-zinc-100 [&_.katex]:text-zinc-100"
+                    />
+                  </div>
+                </div>
+              )}
             </section>
           )}
 

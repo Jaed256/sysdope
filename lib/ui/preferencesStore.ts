@@ -10,6 +10,12 @@ export type UIPreferences = {
   showCitations: boolean;
   /** When true, the global disclaimer strip is hidden (restorable from settings). */
   disclaimerDismissed: boolean;
+  /**
+   * When true, synaptic dopamine rows show an *illustrative* nM readout using a
+   * fixed anchor tied to literature (see `lib/education/physiologicDisplay.ts`).
+   * Core simulation state remains in relative units.
+   */
+  illustrativeExtracellularDaNm: boolean;
 };
 
 export type UIPreferencesStore = UIPreferences & {
@@ -17,6 +23,7 @@ export type UIPreferencesStore = UIPreferences & {
   toggleMode: () => void;
   setShowCitations: (v: boolean) => void;
   toggleShowCitations: () => void;
+  setIllustrativeExtracellularDaNm: (v: boolean) => void;
   dismissDisclaimer: () => void;
   restoreDisclaimer: () => void;
 };
@@ -25,6 +32,7 @@ const DEFAULTS: UIPreferences = {
   mode: "beginner",
   showCitations: true,
   disclaimerDismissed: false,
+  illustrativeExtracellularDaNm: false,
 };
 
 /**
@@ -42,6 +50,8 @@ export const useUIPreferences = create<UIPreferencesStore>()(
         set({ mode: get().mode === "beginner" ? "advanced" : "beginner" }),
       setShowCitations: (showCitations) => set({ showCitations }),
       toggleShowCitations: () => set({ showCitations: !get().showCitations }),
+      setIllustrativeExtracellularDaNm: (illustrativeExtracellularDaNm) =>
+        set({ illustrativeExtracellularDaNm }),
       dismissDisclaimer: () => set({ disclaimerDismissed: true }),
       restoreDisclaimer: () => set({ disclaimerDismissed: false }),
     }),
@@ -51,13 +61,16 @@ export const useUIPreferences = create<UIPreferencesStore>()(
         mode: s.mode,
         showCitations: s.showCitations,
         disclaimerDismissed: s.disclaimerDismissed,
+        illustrativeExtracellularDaNm: s.illustrativeExtracellularDaNm,
       }),
-      merge: (persisted, current): UIPreferencesStore => ({
-        ...current,
-        ...(typeof persisted === "object" && persisted !== null
-          ? (persisted as Partial<UIPreferences>)
-          : {}),
-      }),
+      merge: (persisted, current): UIPreferencesStore => {
+        const p =
+          typeof persisted === "object" && persisted !== null
+            ? (persisted as Partial<UIPreferences>)
+            : {};
+        // Fill new preference keys when localStorage predates them.
+        return { ...current, ...DEFAULTS, ...p };
+      },
     },
   ),
 );

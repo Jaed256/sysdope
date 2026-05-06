@@ -4,6 +4,8 @@ import { Handle, Position, type NodeProps } from "@xyflow/react";
 import { memo, useMemo } from "react";
 import { clsx } from "clsx";
 import { useSimulationStore } from "@/lib/simulation/store";
+import { illustrativeExtracellularDopamineNm } from "@/lib/education/physiologicDisplay";
+import { useUIPreferences } from "@/lib/ui/preferencesStore";
 import type { MoleculeNodeData } from "@/lib/pathway/graph";
 import type { Compartment } from "@/types/reaction";
 
@@ -41,6 +43,10 @@ function MoleculeNodeImpl({ data }: NodeProps) {
     return m[d.compartment] ?? 0;
   });
   const open = useSimulationStore((s) => s.openDrawer);
+  const illustrativeNm = useUIPreferences((s) => s.illustrativeExtracellularDaNm);
+  const showSynDaNm =
+    illustrativeNm && d.compoundId === "dopamine" && d.compartment === "synapse";
+  const synDaNm = showSynDaNm ? illustrativeExtracellularDopamineNm(conc) : null;
 
   const sizing = useMemo(() => {
     const radius = Math.min(56, 28 + Math.sqrt(Math.max(0, conc)) * 1.6);
@@ -77,10 +83,20 @@ function MoleculeNodeImpl({ data }: NodeProps) {
           {d.label.length > 8 ? d.label.slice(0, 6) + "…" : d.label}
         </span>
       </button>
-      <div className="flex items-center gap-1 rounded-full bg-zinc-900/80 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider text-zinc-400 ring-1 ring-zinc-800">
-        <span>{COMPARTMENT_LABELS[d.compartment]}</span>
-        <span className="text-zinc-500">·</span>
-        <span className="tabular-nums text-zinc-200">{conc.toFixed(0)}</span>
+      <div className="flex flex-col items-center gap-0.5">
+        <div className="flex items-center gap-1 rounded-full bg-zinc-900/80 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider text-zinc-400 ring-1 ring-zinc-800">
+          <span>{COMPARTMENT_LABELS[d.compartment]}</span>
+          <span className="text-zinc-500">·</span>
+          <span className="tabular-nums text-zinc-200">{conc.toFixed(0)}</span>
+        </div>
+        {showSynDaNm && synDaNm !== null && (
+          <span
+            className="rounded-full bg-cyan-950/50 px-1.5 py-0.5 text-[8px] font-medium tabular-nums tracking-wide text-cyan-200 ring-1 ring-cyan-800/60"
+            title="Illustrative extracellular-style DA (nM); PMID 15606895 anchor — not a patient calibration"
+          >
+            ≈{synDaNm.toFixed(1)} nM
+          </span>
+        )}
       </div>
       <Handle
         type="source"
