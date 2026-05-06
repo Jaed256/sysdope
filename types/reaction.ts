@@ -28,6 +28,8 @@ export type Reaction = {
   /** compartment for the product side of this reaction */
   toCompartment: Compartment;
   equation?: string;
+  /** Optional KaTeX companion for `equation` (ASCII / Unicode fallback when unset). */
+  equationLatex?: string;
   reversible: boolean;
   /** baseline rate constant used when no enzyme is involved */
   baseRate: number;

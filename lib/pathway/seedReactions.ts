@@ -41,6 +41,8 @@ export const SEED_REACTIONS: Reaction[] = [
     fromCompartment: "precursor",
     toCompartment: "precursor",
     equation: "L-Phe + BH4 + O2 \u2192 L-Tyr + BH2 + H2O",
+    equationLatex:
+      "\\text{L-Phe} + \\mathrm{BH_4} + \\mathrm{O_2} \\rightarrow \\text{L-Tyr} + \\mathrm{BH_2} + \\mathrm{H_2O}",
     reversible: false,
     ...k("rx_pah"),
     citations: [placeholderCite()],
@@ -53,6 +55,8 @@ export const SEED_REACTIONS: Reaction[] = [
     fromCompartment: "precursor",
     toCompartment: "cytosol",
     equation: "L-Tyr + BH4 + O2 \u2192 L-DOPA + BH2 + H2O",
+    equationLatex:
+      "\\text{L-Tyr} + \\mathrm{BH_4} + \\mathrm{O_2} \\rightarrow \\text{L-DOPA} + \\mathrm{BH_2} + \\mathrm{H_2O}",
     reversible: false,
     ...k("rx_th"),
     citations: [placeholderCite()],
@@ -65,6 +69,8 @@ export const SEED_REACTIONS: Reaction[] = [
     fromCompartment: "cytosol",
     toCompartment: "cytosol",
     equation: "L-DOPA \u2192 Dopamine + CO2",
+    equationLatex:
+      "\\text{L-DOPA} \\rightarrow \\text{dopamine} + \\mathrm{CO_2}",
     reversible: false,
     ...k("rx_ddc"),
     citations: [placeholderCite()],
@@ -77,6 +83,8 @@ export const SEED_REACTIONS: Reaction[] = [
     fromCompartment: "cytosol",
     toCompartment: "vesicle",
     equation: "Cytosolic dopamine \u2192 Vesicular dopamine (H+ antiport)",
+    equationLatex:
+      "\\text{Cytosolic dopamine} \\rightarrow \\text{Vesicular dopamine}~(\\mathrm{H}^+~\\text{antiport})",
     reversible: false,
     ...k("rx_vmat2_da"),
     citations: [placeholderCite()],
@@ -89,6 +97,8 @@ export const SEED_REACTIONS: Reaction[] = [
     fromCompartment: "vesicle",
     toCompartment: "vesicle",
     equation: "Dopamine + ascorbate + O2 \u2192 NE + dehydroascorbate + H2O",
+    equationLatex:
+      "\\text{Dopamine} + \\text{ascorbate} + \\mathrm{O_2} \\rightarrow \\text{NE} + \\text{dehydroascorbate} + \\mathrm{H_2O}",
     reversible: false,
     ...k("rx_dbh"),
     citations: [placeholderCite()],
@@ -101,6 +111,7 @@ export const SEED_REACTIONS: Reaction[] = [
     fromCompartment: "cytosol",
     toCompartment: "cytosol",
     equation: "NE + SAM \u2192 Epi + SAH",
+    equationLatex: "\\text{NE} + \\mathrm{SAM} \\rightarrow \\text{Epi} + \\mathrm{SAH}",
     reversible: false,
     ...k("rx_pnmt"),
     citations: [placeholderCite()],
@@ -113,6 +124,8 @@ export const SEED_REACTIONS: Reaction[] = [
     fromCompartment: "extracellular",
     toCompartment: "extracellular",
     equation: "NE + SAM \u2192 Normetanephrine + SAH",
+    equationLatex:
+      "\\text{NE} + \\mathrm{SAM} \\rightarrow \\text{Normetanephrine} + \\mathrm{SAH}",
     reversible: false,
     ...k("rx_comt_ne"),
     citations: [placeholderCite()],
@@ -125,6 +138,8 @@ export const SEED_REACTIONS: Reaction[] = [
     fromCompartment: "extracellular",
     toCompartment: "extracellular",
     equation: "Epi + SAM \u2192 Metanephrine + SAH",
+    equationLatex:
+      "\\text{Epi} + \\mathrm{SAM} \\rightarrow \\text{Metanephrine} + \\mathrm{SAH}",
     reversible: false,
     ...k("rx_comt_epi"),
     citations: [placeholderCite()],
@@ -137,6 +152,8 @@ export const SEED_REACTIONS: Reaction[] = [
     fromCompartment: "synapse",
     toCompartment: "extracellular",
     equation: "Dopamine + SAM \u2192 3-MT + SAH",
+    equationLatex:
+      "\\text{Dopamine} + \\mathrm{SAM} \\rightarrow \\text{3-MT} + \\mathrm{SAH}",
     reversible: false,
     ...k("rx_comt_da_to_3mt"),
     citations: [placeholderCite()],
@@ -149,6 +166,8 @@ export const SEED_REACTIONS: Reaction[] = [
     fromCompartment: "extracellular",
     toCompartment: "extracellular",
     equation: "3-MT + O2 + H2O \u2192 MHPA + NH3 + H2O2",
+    equationLatex:
+      "\\text{3-MT} + \\mathrm{O_2} + \\mathrm{H_2O} \\rightarrow \\text{MHPA} + \\mathrm{NH_3} + \\mathrm{H_2O_2}",
     reversible: false,
     ...k("rx_mao_3mt"),
     citations: [placeholderCite()],
@@ -161,6 +180,8 @@ export const SEED_REACTIONS: Reaction[] = [
     fromCompartment: "extracellular",
     toCompartment: "extracellular",
     equation: "MHPA + NAD+ + H2O \u2192 HVA + NADH",
+    equationLatex:
+      "\\text{MHPA} + \\mathrm{NAD}^+ + \\mathrm{H_2O} \\rightarrow \\text{HVA} + \\mathrm{NADH}",
     reversible: false,
     ...k("rx_aldh_mhpa"),
     citations: [placeholderCite()],
@@ -173,6 +194,8 @@ export const SEED_REACTIONS: Reaction[] = [
     fromCompartment: "cytosol",
     toCompartment: "cytosol",
     equation: "Dopamine + O2 + H2O \u2192 DOPAL + NH3 + H2O2",
+    equationLatex:
+      "\\text{Dopamine} + \\mathrm{O_2} + \\mathrm{H_2O} \\rightarrow \\text{DOPAL} + \\mathrm{NH_3} + \\mathrm{H_2O_2}",
     reversible: false,
     ...k("rx_mao_da"),
     citations: [placeholderCite()],
@@ -185,6 +208,8 @@ export const SEED_REACTIONS: Reaction[] = [
     fromCompartment: "cytosol",
     toCompartment: "cytosol",
     equation: "DOPAL + NAD+ + H2O \u2192 DOPAC + NADH",
+    equationLatex:
+      "\\text{DOPAL} + \\mathrm{NAD}^+ + \\mathrm{H_2O} \\rightarrow \\text{DOPAC} + \\mathrm{NADH}",
     reversible: false,
     ...k("rx_aldh_dopal"),
     citations: [placeholderCite()],
@@ -197,6 +222,8 @@ export const SEED_REACTIONS: Reaction[] = [
     fromCompartment: "cytosol",
     toCompartment: "extracellular",
     equation: "DOPAC + SAM \u2192 HVA + SAH",
+    equationLatex:
+      "\\text{DOPAC} + \\mathrm{SAM} \\rightarrow \\text{HVA} + \\mathrm{SAH}",
     reversible: false,
     ...k("rx_comt_dopac"),
     citations: [placeholderCite()],
@@ -209,6 +236,8 @@ export const SEED_REACTIONS: Reaction[] = [
     fromCompartment: "synapse",
     toCompartment: "cytosol",
     equation: "Synaptic DA + Na+ + Cl- \u2192 Cytosolic DA",
+    equationLatex:
+      "\\text{Synaptic DA} + \\mathrm{Na}^+ + \\mathrm{Cl}^- \\rightarrow \\text{Cytosolic DA}",
     reversible: false,
     ...k("rx_dat"),
     citations: [placeholderCite()],
@@ -242,6 +271,8 @@ export const SEED_REACTIONS: Reaction[] = [
     fromCompartment: "extracellular",
     toCompartment: "urine",
     equation: "Extracellular HVA \u2192 Urinary HVA",
+    equationLatex:
+      "\\text{Extracellular HVA} \\rightarrow \\text{Urinary HVA}",
     reversible: false,
     ...k("rx_hva_excretion"),
     citations: [placeholderCite()],
@@ -254,6 +285,8 @@ export const SEED_REACTIONS: Reaction[] = [
     fromCompartment: "cytosol",
     toCompartment: "cytosol",
     equation: "L-DOPA + O2 \u2192 Dopaquinone + H2O",
+    equationLatex:
+      "\\text{L-DOPA} + \\mathrm{O_2} \\rightarrow \\text{Dopaquinone} + \\mathrm{H_2O}",
     reversible: false,
     ...k("rx_tyr_ldopa"),
     citations: [placeholderCite()],
@@ -265,6 +298,7 @@ export const SEED_REACTIONS: Reaction[] = [
     fromCompartment: "cytosol",
     toCompartment: "cytosol",
     equation: "Dopaquinone \u2192 Dopachrome",
+    equationLatex: "\\text{Dopaquinone} \\rightarrow \\text{Dopachrome}",
     reversible: false,
     ...k("rx_dopachrome"),
     citations: [placeholderCite()],
@@ -276,6 +310,8 @@ export const SEED_REACTIONS: Reaction[] = [
     fromCompartment: "cytosol",
     toCompartment: "cytosol",
     equation: "Dopachrome \u2192 \u2026 \u2192 Melanin (lumped)",
+    equationLatex:
+      "\\text{Dopachrome} \\rightarrow \\cdots \\rightarrow \\text{Melanin}~(\\text{lumped})",
     reversible: false,
     ...k("rx_melanin"),
     citations: [placeholderCite()],

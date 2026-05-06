@@ -50,6 +50,8 @@ export const SEED_ENZYMES: Enzyme[] = [
     cofactors: ["BH4 (tetrahydrobiopterin)", "Fe(II)", "O2"],
     subcellularLocation: "Cytosol (primarily hepatocytes)",
     reactionEquation: "L-phenylalanine + BH4 + O2 \u2192 L-tyrosine + BH2 + H2O",
+    reactionEquationLatex:
+      "\\text{L-phenylalanine} + \\mathrm{BH_4} + \\mathrm{O_2} \\rightarrow \\text{L-tyrosine} + \\mathrm{BH_2} + \\mathrm{H_2O}",
     inhibitionEffect:
       "PAH inhibition causes phenylalanine accumulation and reduced tyrosine production.",
     upregulationEffect:
@@ -68,6 +70,8 @@ export const SEED_ENZYMES: Enzyme[] = [
     cofactors: ["BH4 (tetrahydrobiopterin)", "Fe(II)", "O2"],
     subcellularLocation: "Cytosol of catecholaminergic neurons",
     reactionEquation: "L-tyrosine + BH4 + O2 \u2192 L-DOPA + BH2 + H2O",
+    reactionEquationLatex:
+      "\\text{L-tyrosine} + \\mathrm{BH_4} + \\mathrm{O_2} \\rightarrow \\text{L-DOPA} + \\mathrm{BH_2} + \\mathrm{H_2O}",
     inhibitionEffect:
       "TH is the rate-limiting step of catecholamine synthesis. Inhibition collapses downstream dopamine, norepinephrine, and epinephrine output even with abundant tyrosine.",
     upregulationEffect:
@@ -86,6 +90,8 @@ export const SEED_ENZYMES: Enzyme[] = [
     cofactors: ["PLP (pyridoxal 5\u2032-phosphate / vitamin B6)"],
     subcellularLocation: "Cytosol",
     reactionEquation: "L-DOPA \u2192 dopamine + CO2",
+    reactionEquationLatex:
+      "\\text{L-DOPA} \\rightarrow \\text{dopamine} + \\mathrm{CO_2}",
     inhibitionEffect:
       "L-DOPA accumulates upstream and dopamine production drops.",
     upregulationEffect:
@@ -111,6 +117,8 @@ export const SEED_ENZYMES: Enzyme[] = [
     cofactors: ["Ascorbate", "O2", "Cu(II)"],
     subcellularLocation: "Synaptic vesicle membrane (noradrenergic neurons)",
     reactionEquation: "Dopamine + ascorbate + O2 \u2192 norepinephrine + dehydroascorbate + H2O",
+    reactionEquationLatex:
+      "\\text{Dopamine} + \\text{ascorbate} + \\mathrm{O_2} \\rightarrow \\text{norepinephrine} + \\text{dehydroascorbate} + \\mathrm{H_2O}",
     inhibitionEffect:
       "Dopamine accumulates relative to norepinephrine; downstream NE and Epi production fall.",
     upregulationEffect:
@@ -129,6 +137,8 @@ export const SEED_ENZYMES: Enzyme[] = [
     cofactors: ["S-adenosyl-L-methionine (SAM)"],
     subcellularLocation: "Cytosol (adrenal medulla)",
     reactionEquation: "Norepinephrine + SAM \u2192 epinephrine + SAH",
+    reactionEquationLatex:
+      "\\text{Norepinephrine} + \\mathrm{SAM} \\rightarrow \\text{epinephrine} + \\mathrm{SAH}",
     inhibitionEffect: "Reduced epinephrine production from norepinephrine.",
     upregulationEffect:
       "More norepinephrine is converted to epinephrine.",
@@ -147,6 +157,8 @@ export const SEED_ENZYMES: Enzyme[] = [
     subcellularLocation: "Cytosol and membrane-bound (MB-COMT)",
     reactionEquation:
       "Catechol substrate + SAM \u2192 O-methylated product + SAH",
+    reactionEquationLatex:
+      "\\text{Catechol substrate} + \\mathrm{SAM} \\rightarrow \\text{O-methylated product} + \\mathrm{SAH}",
     inhibitionEffect:
       "Reduced 3-MT, normetanephrine, metanephrine, and HVA output; extracellular dopamine clearance slows.",
     upregulationEffect:
@@ -173,6 +185,8 @@ export const SEED_ENZYMES: Enzyme[] = [
     subcellularLocation: "Outer mitochondrial membrane",
     reactionEquation:
       "Monoamine + O2 + H2O \u2192 aldehyde + NH3 + H2O2",
+    reactionEquationLatex:
+      "\\text{Monoamine} + \\mathrm{O_2} + \\mathrm{H_2O} \\rightarrow \\text{aldehyde} + \\mathrm{NH_3} + \\mathrm{H_2O_2}",
     inhibitionEffect:
       "Cytosolic dopamine and other monoamines accumulate; DOPAL formation drops; HVA output falls.",
     upregulationEffect:
@@ -199,6 +213,8 @@ export const SEED_ENZYMES: Enzyme[] = [
     subcellularLocation: "Outer mitochondrial membrane",
     reactionEquation:
       "Monoamine + O2 + H2O \u2192 aldehyde + NH3 + H2O2",
+    reactionEquationLatex:
+      "\\text{Monoamine} + \\mathrm{O_2} + \\mathrm{H_2O} \\rightarrow \\text{aldehyde} + \\mathrm{NH_3} + \\mathrm{H_2O_2}",
     inhibitionEffect:
       "Reduced oxidative deamination of dopamine; cytosolic dopamine accumulates.",
     upregulationEffect:
@@ -224,6 +240,8 @@ export const SEED_ENZYMES: Enzyme[] = [
     cofactors: ["NAD+"],
     subcellularLocation: "Mitochondrial matrix and cytosol",
     reactionEquation: "Aldehyde + NAD+ + H2O \u2192 carboxylic acid + NADH",
+    reactionEquationLatex:
+      "\\text{Aldehyde} + \\mathrm{NAD}^+ + \\mathrm{H_2O} \\rightarrow \\text{carboxylic acid} + \\mathrm{NADH}",
     inhibitionEffect:
       "DOPAL accumulates because it is no longer oxidized to DOPAC; this is associated with neurotoxicity in the literature.",
     upregulationEffect:
@@ -250,6 +268,8 @@ export const SEED_ENZYMES: Enzyme[] = [
     subcellularLocation: "Melanosome membrane (melanocytes)",
     reactionEquation:
       "L-tyrosine / L-DOPA + O2 \u2192 dopaquinone + H2O",
+    reactionEquationLatex:
+      "\\text{L-tyrosine / L-DOPA} + \\mathrm{O_2} \\rightarrow \\text{dopaquinone} + \\mathrm{H_2O}",
     inhibitionEffect:
       "Reduced melanin production; substrate stays in catechol form.",
     upregulationEffect: "Increased flux toward dopaquinone and melanin.",
@@ -267,6 +287,8 @@ export const SEED_ENZYMES: Enzyme[] = [
     subcellularLocation: "Synaptic vesicle membrane",
     reactionEquation:
       "Cytosolic monoamine + H+(vesicle) \u2192 vesicular monoamine + H+(cytosol)",
+    reactionEquationLatex:
+      "\\text{Cytosolic monoamine} + \\mathrm{H}^+_{\\text{vesicle}} \\rightarrow \\text{vesicular monoamine} + \\mathrm{H}^+_{\\text{cytosol}}",
     inhibitionEffect:
       "Cytosolic dopamine accumulates and vesicular dopamine drops; risk of DOPAL-driven toxicity rises.",
     upregulationEffect:
@@ -292,6 +314,8 @@ export const SEED_ENZYMES: Enzyme[] = [
     subcellularLocation: "Presynaptic plasma membrane",
     reactionEquation:
       "Synaptic dopamine + Na+ + Cl- \u2192 cytosolic dopamine + Na+ + Cl- (presynapse)",
+    reactionEquationLatex:
+      "\\text{Synaptic dopamine} + \\mathrm{Na}^+ + \\mathrm{Cl}^- \\rightarrow \\text{cytosolic dopamine} + \\mathrm{Na}^+ + \\mathrm{Cl}^-~(\\text{presynapse})",
     inhibitionEffect:
       "Synaptic dopamine clearance slows; signaling at D1\u2013D5 receptors is prolonged and overflow alerts can trigger.",
     upregulationEffect:
