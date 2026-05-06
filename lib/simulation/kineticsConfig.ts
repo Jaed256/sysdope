@@ -80,6 +80,12 @@ export const REACTION_KINETICS: Record<string, ReactionKineticConfig> = {
   rx_comt_dopac: { km: 25, vmax: 3, baseRate: 0 },
   // 15. DAT: synaptic DA -> cytosolic DA
   rx_dat: { km: 5, vmax: 8, baseRate: 0 },
+  /* 15b — Postsynaptic D1-D5 dopamine-binding representation (education only). */
+  rx_postsynaptic_d1: { km: 18, vmax: 2.6, baseRate: 0 },
+  rx_postsynaptic_d2: { km: 16, vmax: 2.4, baseRate: 0 },
+  rx_postsynaptic_d3: { km: 20, vmax: 2.0, baseRate: 0 },
+  rx_postsynaptic_d4: { km: 22, vmax: 1.6, baseRate: 0 },
+  rx_postsynaptic_d5: { km: 18, vmax: 1.9, baseRate: 0 },
   // 16. HVA -> urine (passive sink)
   rx_hva_excretion: { km: 1, vmax: 0, baseRate: 0.05 },
   // 17. TYR: L-DOPA -> dopaquinone

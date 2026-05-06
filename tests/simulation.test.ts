@@ -102,8 +102,11 @@ describe("simulation engine", () => {
     // tyrosine should remain very high in the inhibited scenario (substrate
     // accumulation upstream of TH)
     expect(inhibited.concentrations.tyrosine?.precursor ?? 0).toBeGreaterThan(900);
-    // and a TH bottleneck alert must have fired at some point
-    const sawAlert = inhibited.eventLog.some((e) => e.includes("TH bottleneck"));
+    // and either the partial-throughput bottleneck toast or the explicit
+    // "TH fully blocked" info alert must have surfaced in the live log.
+    const sawAlert = inhibited.eventLog.some(
+      (e) => e.includes("TH bottleneck") || e.includes("TH is fully blocked"),
+    );
     expect(sawAlert).toBe(true);
   });
 

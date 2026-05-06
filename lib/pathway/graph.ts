@@ -99,6 +99,13 @@ const MOLECULE_POSITIONS: Record<string, Position> = {
   "mol:mhpa@extracellular": pos(13, 6),
   "mol:hva@extracellular": pos(14, 5),
   "mol:hva@urine": pos(16, 5),
+
+  // Postsynaptic dopamine-receptor teaching nodes (same compartment as synapse band)
+  "mol:postsynaptic_d1@synapse": pos(10.9, 8.35),
+  "mol:postsynaptic_d2@synapse": pos(11.9, 8.35),
+  "mol:postsynaptic_d3@synapse": pos(12.9, 8.35),
+  "mol:postsynaptic_d4@synapse": pos(13.9, 8.35),
+  "mol:postsynaptic_d5@synapse": pos(14.9, 8.35),
 };
 
 const ENZYME_POSITIONS: Record<string, Position> = {

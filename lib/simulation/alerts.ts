@@ -1,9 +1,12 @@
 import type { SimulationAlert, SimulationState } from "@/types/simulation";
+import { ACTIVITY_MULTIPLIER } from "@/types/simulation";
 import { VESICLE_MAX_CAPACITY as CAPACITY } from "./kineticsConfig";
 
 export const ALERT_THRESHOLDS = {
   thBottleneckTyrosine: 200,
   thBottleneckRatio: 0.05, // L-DOPA/Tyr below this with high Tyr -> bottleneck
+  /** When TH is hard-inhibited, L-DOPA should stay small relative to Tyr. */
+  thBlockedLdopaRatio: 0.15,
   vesicleSaturation: 250,
   cytosolicDopamineOverflow: 100,
   dopalToxicity: 80,
@@ -31,7 +34,26 @@ export function evaluateAlerts(state: SimulationState): SimulationAlert[] {
 
   const tyr = get(state, "tyrosine", "precursor");
   const lDopa = get(state, "l_dopa", "cytosol");
+  const thLvl = state.enzymeActivity["th"] ?? "normal";
+  const thMult = ACTIVITY_MULTIPLIER[thLvl] ?? 1;
+  const thInh = Math.min(1, Math.max(0, state.inhibitorStrength["th"] ?? 0));
+  const thEffective = thMult * (1 - thInh);
   if (
+    tyr > 35 &&
+    thEffective < 1e-6 &&
+    lDopa < tyr * ALERT_THRESHOLDS.thBlockedLdopaRatio
+  ) {
+    out.push({
+      id: "th_fully_blocked",
+      severity: "info",
+      title: "TH is fully blocked — upstream pools rise",
+      message:
+        "Tyrosine cannot become L-DOPA while tyrosine hydroxylase is completely inhibited. Watch precursor L-Tyr climb in Live levels while L-DOPA and downstream dopamine flatline; this illustrates the bottleneck, not a frozen simulation.",
+      raisedAtTick: tick,
+    });
+  }
+  if (
+    thEffective > 1e-6 &&
     tyr > ALERT_THRESHOLDS.thBottleneckTyrosine &&
     lDopa / Math.max(1, tyr) < ALERT_THRESHOLDS.thBottleneckRatio
   ) {

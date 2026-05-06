@@ -1,17 +1,17 @@
 import { NavBar } from "@/components/landing/NavBar";
 import { Hero } from "@/components/landing/Hero";
+import { SimulatorPreview } from "@/components/landing/SimulatorPreview";
 import { FeatureGrid } from "@/components/landing/FeatureGrid";
+import { SiteFooter } from "@/components/landing/SiteFooter";
 
 export default function HomePage() {
   return (
     <main className="min-h-screen">
       <NavBar />
       <Hero />
+      <SimulatorPreview />
       <FeatureGrid />
-      <footer className="border-t border-zinc-800/80 px-6 py-6 text-center text-[11px] text-zinc-500">
-        SysDope · Educational simulation only · Not medical advice · Built with
-        Next.js, React Flow, Motion, Zustand, and Zod
-      </footer>
+      <SiteFooter />
     </main>
   );
 }

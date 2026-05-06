@@ -339,6 +339,11 @@ export function createInitialState(input: CreateInitialStateInput): SimulationSt
     dopaquinone: { cytosol: 0 },
     dopachrome: { cytosol: 0 },
     melanin: { cytosol: 0 },
+    postsynaptic_d1: { synapse: 0 },
+    postsynaptic_d2: { synapse: 0 },
+    postsynaptic_d3: { synapse: 0 },
+    postsynaptic_d4: { synapse: 0 },
+    postsynaptic_d5: { synapse: 0 },
     ...(input.initialConcentrations ?? {}),
   };
 

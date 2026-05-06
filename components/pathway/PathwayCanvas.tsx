@@ -61,7 +61,6 @@ function PathwayCanvasInner() {
 
   return (
     <div className="relative h-full w-full">
-      <ParticleLayer />
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -78,6 +77,7 @@ function PathwayCanvasInner() {
           type: REACTION_EDGE_TYPE,
         }}
       >
+        <ParticleLayer />
         <Background
           variant={BackgroundVariant.Dots}
           gap={28}

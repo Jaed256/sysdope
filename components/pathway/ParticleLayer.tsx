@@ -6,6 +6,7 @@ import {
   useNodesInitialized,
   useReactFlow,
   useStore,
+  useViewport,
   type Edge,
 } from "@xyflow/react";
 import { useShallow } from "zustand/react/shallow";
@@ -25,19 +26,17 @@ type EdgeEndpoint = {
 };
 
 /**
- * Real flux particles. For each reaction edge whose `lastFlux > 0` we render
- * a small number of dots that travel from source to target. Particle count
- * and animation speed scale with flux. Honors prefers-reduced-motion: when
- * the user prefers reduced motion, we render static dots at the edge midpoint
- * scaled by flux instead of animating.
+ * Flux-weighted dots along enzyme edges. Must render as a child of
+ * {@link ReactFlow} so hooks share the canvas store/coordinate system.
+ * Positions rescale whenever the viewport, node measurements, or the host
+ * element box changes (`ResizeObserver` + `viewport` deps).
  */
 export function ParticleLayer() {
   const edges = useEdges<Edge<ReactionEdgeData>>();
-
-  // Subscribe to React Flow's internal store so we re-render when nodes move
-  // or the viewport changes.
   const nodeInternals = useStore((s) => s.nodeLookup);
-  const transform = useStore((s) => s.transform);
+  /** Subscribe to xy/z pan/zoom — keeps screen-space particle endpoints current. */
+  const viewport = useViewport();
+
   const initialized = useNodesInitialized();
   const { flowToScreenPosition } = useReactFlow();
 
@@ -76,7 +75,8 @@ export function ParticleLayer() {
       });
       out.push({
         id: e.id,
-        reactionId: (e.data as ReactionEdgeData | undefined)?.reactionId ?? e.id,
+        reactionId:
+          (e.data as ReactionEdgeData | undefined)?.reactionId ?? e.id,
         x1: p1.x,
         y1: p1.y,
         x2: p2.x,
@@ -84,51 +84,49 @@ export function ParticleLayer() {
       });
     }
     return out;
-    // intentionally include `transform` so panning/zooming triggers a re-layout
-  }, [edges, nodeInternals, flowToScreenPosition, initialized, transform]);
+  }, [
+    edges,
+    nodeInternals,
+    flowToScreenPosition,
+    initialized,
+    viewport.x,
+    viewport.y,
+    viewport.zoom,
+  ]);
 
-  // We need a parent ref so we can read its bounding rect to convert from
-  // screen coords -> coords inside this layer.
   const layerRef = useRef<HTMLDivElement>(null);
   const [origin, setOrigin] = useState({ x: 0, y: 0 });
+
   useEffect(() => {
-    if (!layerRef.current) return;
-    const r = layerRef.current.getBoundingClientRect();
-    setOrigin({ x: r.left, y: r.top });
-    const onResize = () => {
-      if (!layerRef.current) return;
-      const rr = layerRef.current.getBoundingClientRect();
-      setOrigin({ x: rr.left, y: rr.top });
+    const el = layerRef.current;
+    if (!el) return;
+
+    const syncOrigin = () => {
+      const r = el.getBoundingClientRect();
+      setOrigin({ x: r.left, y: r.top });
     };
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, []);
+
+    syncOrigin();
+
+    let ro: ResizeObserver | undefined;
+    if (typeof ResizeObserver !== "undefined") {
+      ro = new ResizeObserver(() => syncOrigin());
+      ro.observe(el);
+    }
+
+    window.addEventListener("resize", syncOrigin);
+    return () => {
+      window.removeEventListener("resize", syncOrigin);
+      ro?.disconnect();
+    };
+  }, [endpoints.length]);
 
   return (
     <div
       ref={layerRef}
       aria-hidden
-      className="pointer-events-none absolute inset-0 z-10 overflow-hidden"
+      className="pointer-events-none absolute inset-0 z-[4] overflow-hidden"
     >
-      <style jsx global>{`
-        @keyframes flux-travel {
-          0% {
-            transform: translate3d(var(--fx-x1), var(--fx-y1), 0) scale(0.6);
-            opacity: 0;
-          }
-          15% {
-            opacity: 1;
-          }
-          85% {
-            opacity: 1;
-          }
-          100% {
-            transform: translate3d(var(--fx-x2), var(--fx-y2), 0) scale(1.0);
-            opacity: 0;
-          }
-        }
-      `}</style>
-
       {endpoints.map((e) => {
         const flux = fluxByReaction[e.reactionId] ?? 0;
         if (flux <= 0.1) return null;
@@ -161,12 +159,13 @@ export function ParticleLayer() {
         return Array.from({ length: count }).map((_, i) => (
           <span
             key={`${e.id}-${i}`}
-            className="absolute size-1.5 rounded-full bg-fuchsia-300 shadow-[0_0_8px_rgba(232,121,249,0.7)]"
+            className="sysdope-flux-particle absolute size-1.5 rounded-full bg-fuchsia-300 shadow-[0_0_8px_rgba(232,121,249,0.7)]"
             style={
               {
                 top: 0,
                 left: 0,
-                animation: `flux-travel ${duration}ms linear ${(i * duration) / count}ms infinite`,
+                animationDuration: `${duration}ms`,
+                animationDelay: `${(i * duration) / count}ms`,
                 "--fx-x1": `${x1}px`,
                 "--fx-y1": `${y1}px`,
                 "--fx-x2": `${x2}px`,
