@@ -11,9 +11,11 @@ import { SEED_ENZYMES } from "@/lib/pathway/seedEnzymes";
 import { SEED_REACTIONS } from "@/lib/pathway/seedReactions";
 import { createInitialState, tick } from "./engine";
 import { SCENARIOS, type Scenario } from "./scenarios";
-
-const TICK_DT = 0.5; // simulated seconds per tick (placeholder unit)
-const RAF_INTERVAL_MS = 100; // wall-clock ms per scheduled tick
+import {
+  COFACTORS,
+  SIMULATION_REFRESH_MS,
+  SIMULATION_TICK_DT,
+} from "./kineticsConfig";
 
 type DrawerKind = "compound" | "enzyme";
 export type DrawerState =
@@ -26,12 +28,14 @@ export type SimStore = SimulationState & {
   drawer: DrawerState;
 
   setEnzymeActivity: (enzymeId: string, level: EnzymeActivityLevel) => void;
+  setInhibitorStrength: (enzymeId: string, strength: number) => void;
   applyScenario: (scenarioId: string, mode?: ApplyScenarioMode) => void;
   addPrecursor: (compoundId: string, compartment: Compartment, amount: number) => void;
   releaseVesicles: (count?: number) => void;
   togglePause: () => void;
   setSpeed: (speed: number) => void;
   reset: () => void;
+  refillCofactors: () => void;
 
   openDrawer: (kind: DrawerKind, targetId: string) => void;
   closeDrawer: () => void;
@@ -63,23 +67,42 @@ export const useSimulationStore = create<SimStore>((set, get) => ({
     }));
   },
 
+  setInhibitorStrength: (enzymeId, strength) => {
+    const clamped = Math.min(1, Math.max(0, strength));
+    set((s) => ({
+      inhibitorStrength: { ...s.inhibitorStrength, [enzymeId]: clamped },
+    }));
+  },
+
   applyScenario: (scenarioId, mode = "merge") => {
     const scenario: Scenario | undefined = SCENARIOS.find((s) => s.id === scenarioId);
     if (!scenario) return;
     set((s) => {
       const baseState = mode === "reset" ? createInitialState({ enzymes: SEED_ENZYMES }) : s;
       const enzymeActivity = { ...baseState.enzymeActivity };
-      // any enzyme not explicitly set goes back to "normal" for clarity
       for (const k of Object.keys(enzymeActivity)) enzymeActivity[k] = "normal";
       for (const [k, v] of Object.entries(scenario.enzymeActivity ?? {})) {
         if (v) enzymeActivity[k] = v;
       }
+      const inhibitorStrength = { ...baseState.inhibitorStrength };
+      for (const k of Object.keys(inhibitorStrength)) inhibitorStrength[k] = 0;
+      for (const [k, v] of Object.entries(scenario.inhibitorStrength ?? {})) {
+        if (v !== undefined) inhibitorStrength[k] = Math.min(1, Math.max(0, v));
+      }
       const concentrations = scenario.concentrations
         ? mergeConcentrations(baseState.concentrations, scenario.concentrations)
         : baseState.concentrations;
+      const cofactors = { ...baseState.cofactors };
+      if (scenario.cofactors) {
+        for (const [k, v] of Object.entries(scenario.cofactors)) {
+          cofactors[k] = Math.max(0, v);
+        }
+      }
       return {
         ...baseState,
         enzymeActivity,
+        inhibitorStrength,
+        cofactors,
         concentrations,
         eventLog: [
           ...baseState.eventLog,
@@ -122,6 +145,19 @@ export const useSimulationStore = create<SimStore>((set, get) => ({
       drawer: null,
     }),
 
+  refillCofactors: () => {
+    set((s) => {
+      const cofactors = { ...s.cofactors };
+      for (const [id, cfg] of Object.entries(COFACTORS)) {
+        cofactors[id] = cfg.replenishTarget;
+      }
+      return {
+        cofactors,
+        eventLog: [...s.eventLog, `t=${s.time} cofactors refilled`].slice(-200),
+      };
+    });
+  },
+
   openDrawer: (kind, targetId) => set({ drawer: { kind, targetId } }),
   closeDrawer: () => set({ drawer: null }),
 
@@ -131,11 +167,11 @@ export const useSimulationStore = create<SimStore>((set, get) => ({
     const step = (now: number) => {
       if (cancelled) return;
       const elapsed = now - last;
-      if (elapsed >= RAF_INTERVAL_MS) {
+      if (elapsed >= SIMULATION_REFRESH_MS) {
         last = now;
         const s = get();
         if (!s.paused) {
-          const dt = TICK_DT * s.speed;
+          const dt = SIMULATION_TICK_DT * s.speed;
           set(
             tick(s, {
               reactions: SEED_REACTIONS,

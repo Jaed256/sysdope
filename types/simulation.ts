@@ -48,6 +48,14 @@ export type SimulationState = {
   concentrations: Record<string, CompartmentMap>;
   /** activity level per enzyme/transporter/receptor id */
   enzymeActivity: Record<string, EnzymeActivityLevel>;
+  /**
+   * Continuous inhibitor strength per enzyme id, in [0, 1]. Layered on top of
+   * `enzymeActivity`: effective_activity = activityMultiplier * (1 - inhibitor)
+   * Defaults to 0 when not set.
+   */
+  inhibitorStrength: Record<string, number>;
+  /** Cofactor pool levels (BH4, SAM, NAD+) in relative units. */
+  cofactors: Record<string, number>;
   /** vesicle release events queued for next tick (number of "releases") */
   pendingReleases: number;
   /** active alert objects */

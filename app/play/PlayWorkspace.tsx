@@ -4,6 +4,7 @@ import { NavBar } from "@/components/landing/NavBar";
 import { PathwayCanvas } from "@/components/pathway/PathwayCanvas";
 import { LevelsDashboard } from "@/components/panels/LevelsDashboard";
 import { EnzymeControls } from "@/components/panels/EnzymeControls";
+import { CofactorPanel } from "@/components/panels/CofactorPanel";
 import { SimulationControls } from "@/components/panels/SimulationControls";
 import { AlertCenter } from "@/components/panels/AlertCenter";
 import { ScenarioCards } from "@/components/panels/ScenarioCards";
@@ -22,6 +23,7 @@ export function PlayWorkspace() {
         {/* Left rail */}
         <aside className="z-20 flex w-[300px] shrink-0 flex-col gap-3 overflow-y-auto border-r border-zinc-800/80 bg-zinc-950/40 p-3">
           <LevelsDashboard />
+          <CofactorPanel />
           <PrecursorTray />
           <SynapseMiniGame />
         </aside>

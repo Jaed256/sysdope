@@ -6,8 +6,12 @@ export type Scenario = {
   description: string;
   /** enzyme activity overrides relative to baseline ("normal") */
   enzymeActivity?: Partial<Record<string, EnzymeActivityLevel>>;
+  /** continuous inhibitor strength (0-1) overrides */
+  inhibitorStrength?: Partial<Record<string, number>>;
   /** absolute compound concentration overrides applied on top of baseline */
   concentrations?: Record<string, CompartmentMap>;
+  /** absolute cofactor pool overrides */
+  cofactors?: Record<string, number>;
 };
 
 export const SCENARIOS: Scenario[] = [
@@ -15,7 +19,6 @@ export const SCENARIOS: Scenario[] = [
     id: "baseline",
     title: "Baseline",
     description: "All enzymes at normal activity. Use as a control.",
-    enzymeActivity: {},
   },
   {
     id: "th_inhibition",
@@ -76,6 +79,36 @@ export const SCENARIOS: Scenario[] = [
       phenylalanine: { precursor: 800 },
       tyrosine: { precursor: 800 },
     },
+  },
+  {
+    id: "mao_a_inhibition_plus_tyrosine",
+    title: "MAO-A inhibition + tyrosine bolus",
+    description:
+      "Combo: MAO-A is partially inhibited and tyrosine is loaded. Dopamine accumulates and synaptic dopamine duration extends.",
+    enzymeActivity: { mao_a: "inhibit" },
+    inhibitorStrength: { mao_b: 0.5 },
+    concentrations: { tyrosine: { precursor: 600 } },
+  },
+  {
+    id: "aldh_dat_double_hit",
+    title: "ALDH + DAT double hit",
+    description:
+      "ALDH and DAT both inhibited. DOPAL toxicity AND synaptic overflow alerts should appear together.",
+    enzymeActivity: { aldh: "inhibit", dat: "inhibit" },
+  },
+  {
+    id: "bh4_depletion",
+    title: "BH4 cofactor depletion",
+    description:
+      "BH4 pool starts at near zero. PAH and TH are throttled until BH4 regenerates — downstream dopamine output drops even without enzyme inhibition.",
+    cofactors: { BH4: 5 },
+  },
+  {
+    id: "sam_depletion",
+    title: "SAM cofactor depletion",
+    description:
+      "SAM pool starts at near zero. PNMT and all COMT branches are throttled until SAM regenerates — HVA output and metanephrine production both fall.",
+    cofactors: { SAM: 5 },
   },
 ];
 

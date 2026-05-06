@@ -1,18 +1,14 @@
 import type { Reaction } from "@/types/reaction";
 import type { Citation } from "@/types/citation";
+import { REACTION_KINETICS } from "@/lib/simulation/kineticsConfig";
 
 const ACCESSED = "2026-05-05";
 
 /**
- * NOTE — kinetic constants are *educational placeholders* tuned so the
- * teaching points emerge clearly:
- *   - TH has the lowest vmax of any enzyme on the dopamine path → it is the
- *     rate-limiting step.
- *   - VMAT2 has finite throughput so cytosolic dopamine can rise when MAO is
- *     inhibited.
- *   - DAT has a moderate vmax so synaptic clearance can be visibly modulated.
- * They are NOT serum or in-vitro values. Real values would require
- * literature citations and would replace these placeholders.
+ * NOTE — kinetic constants live in `lib/simulation/kineticsConfig.ts`. This
+ * file owns the *graph* (substrates, products, compartments, equations) and
+ * pulls the numbers from the central config so there is one place to
+ * replace placeholders with source-backed values later.
  */
 function placeholderCite(): Citation {
   return {
@@ -24,8 +20,19 @@ function placeholderCite(): Citation {
   };
 }
 
+function k(reactionId: string): {
+  km: number;
+  vmax: number;
+  baseRate: number;
+} {
+  const cfg = REACTION_KINETICS[reactionId];
+  if (!cfg) {
+    throw new Error(`Missing kinetic config for reaction ${reactionId}`);
+  }
+  return cfg;
+}
+
 export const SEED_REACTIONS: Reaction[] = [
-  // 1. Phenylalanine -> Tyrosine
   {
     id: "rx_pah",
     enzymeId: "pah",
@@ -35,13 +42,9 @@ export const SEED_REACTIONS: Reaction[] = [
     toCompartment: "precursor",
     equation: "L-Phe + BH4 + O2 \u2192 L-Tyr + BH2 + H2O",
     reversible: false,
-    baseRate: 0,
-    km: 50,
-    vmax: 4,
+    ...k("rx_pah"),
     citations: [placeholderCite()],
   },
-
-  // 2. Tyrosine -> L-DOPA  (RATE-LIMITING)
   {
     id: "rx_th",
     enzymeId: "th",
@@ -51,13 +54,9 @@ export const SEED_REACTIONS: Reaction[] = [
     toCompartment: "cytosol",
     equation: "L-Tyr + BH4 + O2 \u2192 L-DOPA + BH2 + H2O",
     reversible: false,
-    baseRate: 0,
-    km: 30,
-    vmax: 1.2,
+    ...k("rx_th"),
     citations: [placeholderCite()],
   },
-
-  // 3. L-DOPA -> Dopamine
   {
     id: "rx_ddc",
     enzymeId: "ddc",
@@ -67,13 +66,9 @@ export const SEED_REACTIONS: Reaction[] = [
     toCompartment: "cytosol",
     equation: "L-DOPA \u2192 Dopamine + CO2",
     reversible: false,
-    baseRate: 0,
-    km: 25,
-    vmax: 8,
+    ...k("rx_ddc"),
     citations: [placeholderCite()],
   },
-
-  // 4. VMAT2: cytosolic DA -> vesicular DA
   {
     id: "rx_vmat2_da",
     enzymeId: "vmat2",
@@ -83,13 +78,9 @@ export const SEED_REACTIONS: Reaction[] = [
     toCompartment: "vesicle",
     equation: "Cytosolic dopamine \u2192 Vesicular dopamine (H+ antiport)",
     reversible: false,
-    baseRate: 0,
-    km: 15,
-    vmax: 6,
+    ...k("rx_vmat2_da"),
     citations: [placeholderCite()],
   },
-
-  // 5. DBH: vesicular DA -> NE  (occurs inside the vesicle in noradrenergic neurons)
   {
     id: "rx_dbh",
     enzymeId: "dbh",
@@ -99,13 +90,9 @@ export const SEED_REACTIONS: Reaction[] = [
     toCompartment: "vesicle",
     equation: "Dopamine + ascorbate + O2 \u2192 NE + dehydroascorbate + H2O",
     reversible: false,
-    baseRate: 0,
-    km: 20,
-    vmax: 3,
+    ...k("rx_dbh"),
     citations: [placeholderCite()],
   },
-
-  // 6. PNMT: NE -> Epi  (cytosolic in adrenal medulla; modeled here as cytosol)
   {
     id: "rx_pnmt",
     enzymeId: "pnmt",
@@ -115,13 +102,9 @@ export const SEED_REACTIONS: Reaction[] = [
     toCompartment: "cytosol",
     equation: "NE + SAM \u2192 Epi + SAH",
     reversible: false,
-    baseRate: 0,
-    km: 25,
-    vmax: 2.5,
+    ...k("rx_pnmt"),
     citations: [placeholderCite()],
   },
-
-  // 7. NE -> Normetanephrine via COMT (extracellular)
   {
     id: "rx_comt_ne",
     enzymeId: "comt",
@@ -131,13 +114,9 @@ export const SEED_REACTIONS: Reaction[] = [
     toCompartment: "extracellular",
     equation: "NE + SAM \u2192 Normetanephrine + SAH",
     reversible: false,
-    baseRate: 0,
-    km: 30,
-    vmax: 2,
+    ...k("rx_comt_ne"),
     citations: [placeholderCite()],
   },
-
-  // 8. Epi -> Metanephrine via COMT (extracellular)
   {
     id: "rx_comt_epi",
     enzymeId: "comt",
@@ -147,13 +126,9 @@ export const SEED_REACTIONS: Reaction[] = [
     toCompartment: "extracellular",
     equation: "Epi + SAM \u2192 Metanephrine + SAH",
     reversible: false,
-    baseRate: 0,
-    km: 30,
-    vmax: 2,
+    ...k("rx_comt_epi"),
     citations: [placeholderCite()],
   },
-
-  // 9. Synaptic DA -> 3-MT via COMT
   {
     id: "rx_comt_da_to_3mt",
     enzymeId: "comt",
@@ -163,13 +138,9 @@ export const SEED_REACTIONS: Reaction[] = [
     toCompartment: "extracellular",
     equation: "Dopamine + SAM \u2192 3-MT + SAH",
     reversible: false,
-    baseRate: 0,
-    km: 20,
-    vmax: 2.5,
+    ...k("rx_comt_da_to_3mt"),
     citations: [placeholderCite()],
   },
-
-  // 10. 3-MT -> MHPA via MAO (use MAO-A as catalyst)
   {
     id: "rx_mao_3mt",
     enzymeId: "mao_a",
@@ -179,13 +150,9 @@ export const SEED_REACTIONS: Reaction[] = [
     toCompartment: "extracellular",
     equation: "3-MT + O2 + H2O \u2192 MHPA + NH3 + H2O2",
     reversible: false,
-    baseRate: 0,
-    km: 40,
-    vmax: 3,
+    ...k("rx_mao_3mt"),
     citations: [placeholderCite()],
   },
-
-  // 11. MHPA -> HVA via ALDH
   {
     id: "rx_aldh_mhpa",
     enzymeId: "aldh",
@@ -195,13 +162,9 @@ export const SEED_REACTIONS: Reaction[] = [
     toCompartment: "extracellular",
     equation: "MHPA + NAD+ + H2O \u2192 HVA + NADH",
     reversible: false,
-    baseRate: 0,
-    km: 30,
-    vmax: 4,
+    ...k("rx_aldh_mhpa"),
     citations: [placeholderCite()],
   },
-
-  // 12. Cytosolic DA -> DOPAL via MAO-B
   {
     id: "rx_mao_da",
     enzymeId: "mao_b",
@@ -211,13 +174,9 @@ export const SEED_REACTIONS: Reaction[] = [
     toCompartment: "cytosol",
     equation: "Dopamine + O2 + H2O \u2192 DOPAL + NH3 + H2O2",
     reversible: false,
-    baseRate: 0,
-    km: 35,
-    vmax: 3,
+    ...k("rx_mao_da"),
     citations: [placeholderCite()],
   },
-
-  // 13. DOPAL -> DOPAC via ALDH
   {
     id: "rx_aldh_dopal",
     enzymeId: "aldh",
@@ -227,13 +186,9 @@ export const SEED_REACTIONS: Reaction[] = [
     toCompartment: "cytosol",
     equation: "DOPAL + NAD+ + H2O \u2192 DOPAC + NADH",
     reversible: false,
-    baseRate: 0,
-    km: 20,
-    vmax: 6,
+    ...k("rx_aldh_dopal"),
     citations: [placeholderCite()],
   },
-
-  // 14. DOPAC -> HVA via COMT
   {
     id: "rx_comt_dopac",
     enzymeId: "comt",
@@ -243,13 +198,9 @@ export const SEED_REACTIONS: Reaction[] = [
     toCompartment: "extracellular",
     equation: "DOPAC + SAM \u2192 HVA + SAH",
     reversible: false,
-    baseRate: 0,
-    km: 25,
-    vmax: 3,
+    ...k("rx_comt_dopac"),
     citations: [placeholderCite()],
   },
-
-  // 15. DAT: synaptic DA -> cytosolic DA
   {
     id: "rx_dat",
     enzymeId: "dat",
@@ -259,13 +210,9 @@ export const SEED_REACTIONS: Reaction[] = [
     toCompartment: "cytosol",
     equation: "Synaptic DA + Na+ + Cl- \u2192 Cytosolic DA",
     reversible: false,
-    baseRate: 0,
-    km: 5,
-    vmax: 8,
+    ...k("rx_dat"),
     citations: [placeholderCite()],
   },
-
-  // 16. HVA exits to urine (passive sink)
   {
     id: "rx_hva_excretion",
     from: ["hva"],
@@ -274,13 +221,9 @@ export const SEED_REACTIONS: Reaction[] = [
     toCompartment: "urine",
     equation: "Extracellular HVA \u2192 Urinary HVA",
     reversible: false,
-    baseRate: 0.05,
-    km: 1,
-    vmax: 0,
+    ...k("rx_hva_excretion"),
     citations: [placeholderCite()],
   },
-
-  // 17. Tyrosinase: L-DOPA -> Dopaquinone
   {
     id: "rx_tyr_ldopa",
     enzymeId: "tyr",
@@ -290,13 +233,9 @@ export const SEED_REACTIONS: Reaction[] = [
     toCompartment: "cytosol",
     equation: "L-DOPA + O2 \u2192 Dopaquinone + H2O",
     reversible: false,
-    baseRate: 0,
-    km: 50,
-    vmax: 0.4,
+    ...k("rx_tyr_ldopa"),
     citations: [placeholderCite()],
   },
-
-  // 18. Dopaquinone -> Dopachrome (spontaneous)
   {
     id: "rx_dopachrome",
     from: ["dopaquinone"],
@@ -305,13 +244,9 @@ export const SEED_REACTIONS: Reaction[] = [
     toCompartment: "cytosol",
     equation: "Dopaquinone \u2192 Dopachrome",
     reversible: false,
-    baseRate: 0.2,
-    km: 1,
-    vmax: 0,
+    ...k("rx_dopachrome"),
     citations: [placeholderCite()],
   },
-
-  // 19. Dopachrome -> Melanin (multi-step lumped)
   {
     id: "rx_melanin",
     from: ["dopachrome"],
@@ -320,9 +255,7 @@ export const SEED_REACTIONS: Reaction[] = [
     toCompartment: "cytosol",
     equation: "Dopachrome \u2192 \u2026 \u2192 Melanin (lumped)",
     reversible: false,
-    baseRate: 0.1,
-    km: 1,
-    vmax: 0,
+    ...k("rx_melanin"),
     citations: [placeholderCite()],
   },
 ];

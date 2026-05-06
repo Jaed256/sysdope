@@ -1,4 +1,5 @@
 import type { SimulationAlert, SimulationState } from "@/types/simulation";
+import { VESICLE_MAX_CAPACITY as CAPACITY } from "./kineticsConfig";
 
 export const ALERT_THRESHOLDS = {
   thBottleneckTyrosine: 200,
@@ -8,9 +9,10 @@ export const ALERT_THRESHOLDS = {
   dopalToxicity: 80,
   synapticOverflow: 120,
   hvaUrineHigh: 200,
+  cofactorDepleted: 30,
 };
 
-const VESICLE_CAPACITY = 300;
+const VESICLE_CAPACITY = CAPACITY;
 
 function get(state: SimulationState, compound: string, compartment: string): number {
   const compartments = state.concentrations[compound];
@@ -100,6 +102,18 @@ export function evaluateAlerts(state: SimulationState): SimulationAlert[] {
         "Sustained MAO + COMT + ALDH degradation is shunting dopamine through HVA into the urine compartment.",
       raisedAtTick: tick,
     });
+  }
+
+  for (const [name, level] of Object.entries(state.cofactors ?? {})) {
+    if (level < ALERT_THRESHOLDS.cofactorDepleted) {
+      out.push({
+        id: `cofactor_${name}_low`,
+        severity: "warning",
+        title: `${name} cofactor low`,
+        message: `${name} pool is depleted. Reactions that depend on ${name} are throttled until the pool regenerates.`,
+        raisedAtTick: tick,
+      });
+    }
   }
 
   return out;

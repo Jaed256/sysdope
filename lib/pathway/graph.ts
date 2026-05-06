@@ -47,63 +47,121 @@ export function enzymeNodeId(enzymeId: string) {
 type Position = { x: number; y: number };
 
 const COL_W = 200;
-const ROW_H = 110;
+const ROW_H = 100;
 
 function pos(col: number, row: number): Position {
   return { x: col * COL_W, y: row * ROW_H };
 }
 
+/**
+ * Layout overview (read left → right, with rows top → bottom):
+ *
+ *   y=-2   melanin branch (TYR → dopaquinone → dopachrome → melanin)
+ *   y= 0   NE / Epi catecholamine arm (vesicle → cytosol → extracellular)
+ *   y= 2   MAIN SPINE: Phe → Tyr → L-DOPA → DA(cyto) → VMAT2 → DA(vesicle) → release → DA(synapse)
+ *   y= 4   Cytosolic DA degradation (MAO-B → DOPAL → ALDH → DOPAC → COMT → HVA)
+ *   y= 6   Synaptic clearance (DAT, COMT, MAO 3-MT branch, ALDH MHPA, HVA → urine)
+ *   y= 8   Postsynaptic receptors (D1-D5)
+ *
+ * Columns are kept unique per node to make edges as monotonically left-to-right
+ * as possible.
+ */
+
 const MOLECULE_POSITIONS: Record<string, Position> = {
-  // precursors
-  "mol:phenylalanine@precursor": pos(0, 1),
-  "mol:tyrosine@precursor": pos(2, 1),
-  // cytosol
-  "mol:l_dopa@cytosol": pos(4, 1),
-  "mol:dopamine@cytosol": pos(6, 1),
-  "mol:dopal@cytosol": pos(7, 3),
-  "mol:dopac@cytosol": pos(9, 3),
-  "mol:dopaquinone@cytosol": pos(5, -1),
-  "mol:dopachrome@cytosol": pos(7, -1),
-  "mol:melanin@cytosol": pos(9, -1),
-  // vesicle
-  "mol:dopamine@vesicle": pos(8, 1),
+  // melanin branch (top)
+  "mol:dopaquinone@cytosol": pos(5, -2),
+  "mol:dopachrome@cytosol": pos(7, -2),
+  "mol:melanin@cytosol": pos(9, -2),
+
+  // NE / Epi arm
   "mol:norepinephrine@vesicle": pos(9, 0),
-  // cytosol catecholamines
-  "mol:norepinephrine@cytosol": pos(10, 0),
-  "mol:epinephrine@cytosol": pos(12, 0),
-  // synapse
-  "mol:dopamine@synapse": pos(10, 2),
-  // extracellular metabolites
-  "mol:three_mt@extracellular": pos(12, 2),
-  "mol:mhpa@extracellular": pos(13, 2),
-  "mol:hva@extracellular": pos(14, 2),
-  "mol:normetanephrine@extracellular": pos(11, 0),
-  "mol:metanephrine@extracellular": pos(13, 0),
-  "mol:norepinephrine@extracellular": pos(10, -1),
-  "mol:epinephrine@extracellular": pos(12, -1),
-  // urine
-  "mol:hva@urine": pos(15, 2),
+  "mol:norepinephrine@cytosol": pos(11, 0),
+  "mol:epinephrine@cytosol": pos(13, 0),
+  "mol:norepinephrine@extracellular": pos(11, 1),
+  "mol:epinephrine@extracellular": pos(13, 1),
+  "mol:normetanephrine@extracellular": pos(12, 0.4),
+  "mol:metanephrine@extracellular": pos(14, 0.4),
+
+  // SPINE
+  "mol:phenylalanine@precursor": pos(0, 2),
+  "mol:tyrosine@precursor": pos(2, 2),
+  "mol:l_dopa@cytosol": pos(4, 2),
+  "mol:dopamine@cytosol": pos(6, 2),
+  "mol:dopamine@vesicle": pos(8, 2),
+
+  // Cytosolic DA degradation
+  "mol:dopal@cytosol": pos(7, 4),
+  "mol:dopac@cytosol": pos(9, 4),
+
+  // Synaptic clearance
+  "mol:dopamine@synapse": pos(10, 6),
+  "mol:three_mt@extracellular": pos(12, 6),
+  "mol:mhpa@extracellular": pos(13, 6),
+  "mol:hva@extracellular": pos(14, 5),
+  "mol:hva@urine": pos(16, 5),
 };
 
 const ENZYME_POSITIONS: Record<string, Position> = {
-  "enz:pah": pos(1, 1),
-  "enz:th": pos(3, 1),
-  "enz:ddc": pos(5, 1),
-  "enz:vmat2": pos(7, 1),
-  "enz:dbh": pos(8, 0),
-  "enz:pnmt": pos(11, 0),
-  "enz:comt": pos(11, 2),
-  "enz:mao_a": pos(12, 3),
-  "enz:mao_b": pos(8, 3),
+  // SPINE
+  "enz:pah": pos(1, 2),
+  "enz:th": pos(3, 2),
+  "enz:ddc": pos(5, 2),
+  "enz:vmat2": pos(7, 2),
+
+  // melanin / NE / Epi
+  "enz:tyr": pos(4, -2),
+  "enz:dbh": pos(8.5, 1),
+  "enz:pnmt": pos(12, 0),
+
+  // Degradation in cytosol
+  "enz:mao_b": pos(7, 3),
   "enz:aldh": pos(8, 4),
-  "enz:tyr": pos(4, -1),
-  "enz:dat": pos(9, 2),
-  "enz:d1": pos(11, 4),
-  "enz:d2": pos(12, 4),
-  "enz:d3": pos(13, 4),
-  "enz:d4": pos(11, 5),
-  "enz:d5": pos(12, 5),
+  "enz:comt": pos(13, 5),
+
+  // Synapse
+  "enz:dat": pos(9, 6),
+  "enz:mao_a": pos(13, 6.5),
+
+  // Receptors
+  "enz:d1": pos(10, 8),
+  "enz:d2": pos(11, 8),
+  "enz:d3": pos(12, 8),
+  "enz:d4": pos(13, 8),
+  "enz:d5": pos(14, 8),
 };
+
+export type CompartmentBand = {
+  compartment: Compartment;
+  label: string;
+  /** band start in flow Y coords */
+  yStart: number;
+  yEnd: number;
+  color: string;
+};
+
+export const COMPARTMENT_BANDS: CompartmentBand[] = [
+  {
+    compartment: "precursor",
+    label: "Precursor pool",
+    yStart: -3 * ROW_H,
+    yEnd: 1.5 * ROW_H,
+    color: "rgba(34, 211, 238, 0.05)",
+  },
+  {
+    compartment: "cytosol",
+    label: "Presynaptic cytosol",
+    yStart: 1.5 * ROW_H,
+    yEnd: 5.5 * ROW_H,
+    color: "rgba(232, 121, 249, 0.05)",
+  },
+  {
+    compartment: "synapse",
+    label: "Synaptic cleft + receptors",
+    yStart: 5.5 * ROW_H,
+    yEnd: 9 * ROW_H,
+    color: "rgba(167, 139, 250, 0.05)",
+  },
+];
 
 /**
  * Builds React Flow nodes & edges from the seed pathway. Each unique

@@ -5,6 +5,7 @@ import {
   BackgroundVariant,
   Controls,
   MiniMap,
+  Panel,
   ReactFlow,
   ReactFlowProvider,
   useEdgesState,
@@ -87,6 +88,20 @@ function PathwayCanvasInner() {
           showInteractive={false}
           className="!bottom-4 !left-4"
         />
+        <Panel
+          position="top-left"
+          className="!m-3 rounded-lg border border-zinc-800 bg-zinc-950/80 p-2 text-[10px] uppercase tracking-wider text-zinc-300 shadow-lg backdrop-blur"
+        >
+          <p className="mb-1 font-semibold text-zinc-200">Compartments</p>
+          <ul className="space-y-0.5 text-zinc-400">
+            <li><span className="mr-1 inline-block size-2 rounded-full bg-cyan-400/70 align-middle" />Precursor</li>
+            <li><span className="mr-1 inline-block size-2 rounded-full bg-fuchsia-400/70 align-middle" />Cytosol</li>
+            <li><span className="mr-1 inline-block size-2 rounded-full bg-amber-400/70 align-middle" />Vesicle</li>
+            <li><span className="mr-1 inline-block size-2 rounded-full bg-violet-400/70 align-middle" />Synapse</li>
+            <li><span className="mr-1 inline-block size-2 rounded-full bg-emerald-400/70 align-middle" />Extracellular</li>
+            <li><span className="mr-1 inline-block size-2 rounded-full bg-zinc-300/70 align-middle" />Urine</li>
+          </ul>
+        </Panel>
         <MiniMap
           pannable
           zoomable

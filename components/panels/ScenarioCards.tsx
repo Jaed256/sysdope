@@ -1,17 +1,30 @@
 "use client";
 
+import { useState } from "react";
 import { useSimulationStore } from "@/lib/simulation/store";
 import { SCENARIOS } from "@/lib/simulation/scenarios";
 import { Button } from "@/components/ui/Button";
 
 export function ScenarioCards() {
   const apply = useSimulationStore((s) => s.applyScenario);
+  const [resetFirst, setResetFirst] = useState(false);
   return (
     <div className="glass rounded-xl p-3">
-      <h3 className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
-        Scenarios
-      </h3>
-      <ul className="grid grid-cols-1 gap-1.5 max-h-60 overflow-y-auto pr-1">
+      <div className="mb-2 flex items-center justify-between">
+        <h3 className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
+          Scenarios
+        </h3>
+        <label className="flex items-center gap-1.5 text-[10px] text-zinc-400">
+          <input
+            type="checkbox"
+            checked={resetFirst}
+            onChange={(e) => setResetFirst(e.target.checked)}
+            className="size-3 accent-fuchsia-400"
+          />
+          Reset first
+        </label>
+      </div>
+      <ul className="grid max-h-60 grid-cols-1 gap-1.5 overflow-y-auto pr-1">
         {SCENARIOS.map((sc) => (
           <li
             key={sc.id}
@@ -29,7 +42,7 @@ export function ScenarioCards() {
               <Button
                 size="sm"
                 variant="ghost"
-                onClick={() => apply(sc.id, "merge")}
+                onClick={() => apply(sc.id, resetFirst ? "reset" : "merge")}
               >
                 Run
               </Button>
@@ -37,6 +50,10 @@ export function ScenarioCards() {
           </li>
         ))}
       </ul>
+      <p className="mt-2 text-[10px] leading-snug text-zinc-500">
+        Toggle &quot;Reset first&quot; to clear all enzyme dials and concentrations
+        before applying a scenario.
+      </p>
     </div>
   );
 }
