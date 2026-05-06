@@ -1,0 +1,22 @@
+---
+description: Always-on rules for SysDope authoring
+alwaysApply: true
+---
+
+# SysDope authoring rules
+
+- **Never invent scientific data.** Every scientific claim shown in the UI
+  must be backed by a `Citation` object pointing to a real source (PubChem,
+  Rhea, UniProt, ChEBI, HMDB, USDA FoodData Central, peer-reviewed paper,
+  etc.). When unsure, use a `confidence: "low"` placeholder citation that
+  links to the relevant database landing page rather than fabricating data.
+- The simulation engine in `lib/simulation` is **headless and pure TypeScript**
+  with no React imports. UI animation state must live in components, not in
+  the simulation store.
+- Concentrations must clamp to `>= 0` after every tick.
+- Default simulation values are educational placeholders unless explicitly
+  source-backed in seed data.
+- All UI numeric levels must be labeled "relative simulation units" — never
+  "ng/mL", "mol/L", or any clinical unit unless source-backed.
+- The global disclaimer "Educational simulation only. Not medical advice."
+  must remain visible on every page.

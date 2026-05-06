@@ -1,36 +1,163 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SysDope
 
-## Getting Started
+> **Educational simulation only. Not medical advice.**
+> Values are simplified and labeled "relative simulation units" unless explicitly source-backed.
 
-First, run the development server:
+SysDope is an interactive, citation-backed simulator for the dopamine pathway: synthesis from phenylalanine and tyrosine, vesicular handling via VMAT2, synaptic release at D1–D5 receptors, DAT reuptake, MAO/COMT/ALDH degradation, and the HVA urinary endpoint.
+
+It is built as both a **portfolio project** and an **educational mini-game**. Click any molecule or enzyme on the pathway and a side drawer shows live data from PubChem (and stub adapters for Rhea, UniProt, ChEBI, HMDB, Europe PMC, USDA FoodData Central) — with citations.
+
+## What you can do
+
+- Drag substrate (Phe, Tyr, L-DOPA, dopamine) into the pathway and watch it propagate through enzymes.
+- Throttle every enzyme/transporter on a 5-state control: `inhibit`, `partial`, `normal`, `upregulate`, `overexpress`.
+- Trigger vesicle release into the synaptic cleft and watch DAT reuptake clear it.
+- Run preset scenarios (TH inhibition, MAO inhibition, ALDH inhibition, VMAT2 inhibition, DAT inhibition, precursor overload).
+- See live alerts when known failure modes appear: **TH bottleneck**, **vesicle saturation**, **cytosolic dopamine overflow**, **DOPAL toxicity**, **synaptic dopamine overflow**, **HVA urinary output increased**.
+
+The single most important teaching point is built into the kinetics:
+
+> **TH (tyrosine hydroxylase) is the rate-limiting step.** Even with abundant tyrosine, downstream dopamine cannot exceed TH's vmax × activity. The simulator lets you watch that bottleneck appear.
+
+## Run locally
+
+Requirements: **Node.js 22+** and npm 10+.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev          # http://localhost:3000
+npm run build        # production build
+npm test             # vitest unit tests for the simulation engine
+npm run typecheck    # tsc --noEmit on app + test configs
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Tech stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Next.js 16** with the App Router and Turbopack
+- **React 19** + **TypeScript** (strict mode)
+- **Tailwind CSS v4** for styling, with a dark biotech / neon aesthetic
+- **@xyflow/react** (React Flow) for the pathway graph
+- **Zustand** for the headless simulation store
+- **Motion** (`motion/react`) for tasteful animations
+- **Zod** for runtime validation of external API responses
+- **Vitest** + **@testing-library** for tests
+- **Vercel-ready** — runs on Fluid Compute with Node 24, no extra config
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Project layout
 
-## Learn More
+```
+app/
+  page.tsx               landing
+  about/page.tsx         project goals + phase plan
+  docs/page.tsx          architecture, source ranking, API endpoints
+  play/                  the simulator (PlayWorkspace.tsx)
+  api/
+    pathway/             seed graph
+    compounds/[id]/      seed + live PubChem (merged via normalize.ts)
+    enzymes/[id]/        seed (UniProt/Rhea adapters are stubs)
+    reactions/[id]/      seed (Rhea adapter is a stub)
+    literature/search/   stub returning []
+    sources/health/      pings every adapter
 
-To learn more about Next.js, take a look at the following resources:
+components/
+  landing/               NavBar, Hero, FeatureGrid, DisclaimerBanner
+  pathway/               PathwayCanvas + MoleculeNode + EnzymeGate +
+                         ReactionEdge + ParticleLayer + PrecursorTray +
+                         SynapseMiniGame
+  panels/                LevelsDashboard, EnzymeControls,
+                         SimulationControls, AlertCenter, CompoundDrawer,
+                         EnzymeDrawer, ScenarioCards, LabNotebook
+  ui/                    Drawer, Badge, Button, CitationList
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+lib/
+  pathway/seed*          seed Compounds, Enzymes, Reactions
+  pathway/graph.ts       builds React Flow nodes/edges from seeds
+  simulation/            kinetics, engine tick, alerts, scenarios, store
+  data/                  pubchem (live), rhea/uniprot/chebi/hmdb/
+                         literature/foodSources (stubs), normalize
+  citations/             source-ranking and bestCitation()
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+types/                   canonical Compound, Enzyme, Reaction, Citation,
+                         SimulationState
+
+tests/                   simulation.test.ts (Vitest)
+```
+
+## Data-source strategy
+
+Everything is sourced through small per-source adapters that all return the same internal shape, then merged in `lib/data/normalize.ts`:
+
+1. **Expert-curated databases** (Rhea, UniProt, ChEBI, HMDB) — top tier
+2. **Chemistry databases** (PubChem) — wired live in Phase 1
+3. **Government / open food databases** (USDA FoodData Central, FooDB)
+4. **Peer-reviewed papers** (Europe PMC, PubMed, Semantic Scholar, OpenAlex)
+5. **Manually curated fallback JSON** — clearly labeled `confidence: low`
+
+Citation ranking lives in [`lib/citations/sourceRanking.ts`](lib/citations/sourceRanking.ts). When sources disagree the higher-confidence source wins, citations are concatenated, deduped by `(sourceName, url)`, and re-ranked.
+
+### Adapter status
+
+| Source                    | Status | Notes |
+|---------------------------|--------|-------|
+| PubChem                   | live   | PUG-REST: IUPAC, formula, MW, SMILES, InChIKey, image, synonyms. Cached 24h via Next `fetch` `revalidate`. |
+| Rhea                      | stub   | Replace `lib/data/rhea.ts` body with a REST fetch + Zod validation. |
+| UniProt                   | stub   | Replace `lib/data/uniprot.ts` body with `/uniprotkb/<id>.json` + Zod. |
+| ChEBI                     | stub   | OLS4 or ChEBI web services. |
+| HMDB                      | stub   | Free use requires the XML dump under HMDB license. |
+| Europe PMC / PubMed       | stub   | Wire one of E-utilities, Europe PMC, Semantic Scholar, OpenAlex. |
+| USDA FoodData Central     | stub   | Source-backed natural-occurrence claims only. |
+
+`/api/sources/health` pings every source and returns `{ source, ok, latencyMs }[]`.
+
+## Scientific limitations
+
+- **All numeric values are "relative simulation units"** — they are NOT serum concentrations, NOT in-vitro Vmax/Km, and NOT clinical reference ranges.
+- **Kinetic constants in `lib/pathway/seedReactions.ts` are educational placeholders** chosen so the teaching points (TH bottleneck, ALDH/DOPAL coupling, etc.) emerge clearly. Real values would require per-reaction citations and would replace the seed entries.
+- **Receptor signaling is not modeled** — D1–D5 are decoration: clicking a receptor opens its data drawer but does not yet drive a Gs/Gi cascade.
+- **No clinical advice.** SysDope is a teaching toy.
+
+## Simulation engine
+
+Pure TypeScript, no React imports — see [`lib/simulation/engine.ts`](lib/simulation/engine.ts). Per tick:
+
+```
+rate = vmax * enzymeActivity * (1 - inhibitor) * S / (km + S)
+```
+
+Then the engine debits the source compartment, credits the destination, applies vesicle-capacity caps for VMAT2, processes pending vesicle release events, applies a small synaptic diffusion sink, recomputes alerts, and updates rolling history buffers. Concentrations are clamped to ≥ 0.
+
+## Tests
+
+```bash
+npm test
+```
+
+Six unit tests in `tests/simulation.test.ts`:
+
+- Concentrations never go below zero across 1000 ticks of a noisy scenario.
+- TH bottleneck: high tyrosine + inhibited TH yields strictly less downstream dopamine than baseline, and the TH-bottleneck alert fires.
+- ALDH inhibition: DOPAL accumulates strictly more than baseline.
+- VMAT2 inhibition: vesicular DA decreases and cytosolic DA increases vs baseline.
+- DAT inhibition: synaptic DA half-life after a release pulse is longer than baseline.
+- HVA urinary output increases over time when DA is being released and degradation pathways are active.
 
 ## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+SysDope is a plain Next.js 16 app — no `vercel.json` or `vercel.ts` is required for Phase 1. Pushing the repo to a Vercel project will build and deploy it on Fluid Compute (Node 24). Route handlers run as Vercel Functions; `/api/compounds/[id]` calls PubChem with Next's built-in cache (`revalidate: 86400`).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+# from the repo root, with the Vercel CLI installed
+vercel deploy        # preview
+vercel deploy --prod # production
+```
+
+## Roadmap
+
+- **Phase 2** — richer kinetics, more compartments, scenario presets, particle layer with actual molecule animation along edges.
+- **Phase 3** — wire Rhea / UniProt / ChEBI / HMDB / Europe PMC / USDA adapters through the same `normalize.ts` layer.
+- **Phase 4** — guided lessons (TH bottleneck, MAO inhibition, ALDH protects against DOPAL, VMAT2 sequestration, DAT and synaptic duration, COMT and HVA), tooltips for cofactors (BH4, iron, PLP/B6, SAM, FAD, NAD+, copper, oxygen, ascorbate), beginner / advanced mode, citations toggle.
+- **Phase 5** — portfolio polish: animated previews, expanded `/about` and `/docs`, screenshots.
+
+## License
+
+Educational use. SysDope cites third-party data sources in-app — please respect their individual licenses (PubChem is public domain; HMDB requires attribution and a license for commercial use; UniProt is CC BY 4.0; Rhea is CC BY 4.0).
