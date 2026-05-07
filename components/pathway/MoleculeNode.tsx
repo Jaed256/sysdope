@@ -9,6 +9,12 @@ import { useUIPreferences } from "@/lib/ui/preferencesStore";
 import type { MoleculeNodeData } from "@/lib/pathway/graph";
 import type { Compartment } from "@/types/reaction";
 
+/** Fixed layout box so React Flow edge geometry stays stable as concentrations change. */
+const NODE_LAYOUT_W = 108;
+const NODE_LAYOUT_MIN_H = 148;
+/** Inner orb base size (px); “growth” is visual-only via `transform: scale`. */
+const ORB_PX = 52;
+
 const COMPARTMENT_COLORS: Record<Compartment, string> = {
   precursor: "ring-emerald-400/60 shadow-emerald-500/40",
   cytosol: "ring-fuchsia-400/60 shadow-fuchsia-500/40",
@@ -48,41 +54,49 @@ function MoleculeNodeImpl({ data }: NodeProps) {
     illustrativeNm && d.compoundId === "dopamine" && d.compartment === "synapse";
   const synDaNm = showSynDaNm ? illustrativeExtracellularDopamineNm(conc) : null;
 
-  const sizing = useMemo(() => {
-    const radius = Math.min(56, 28 + Math.sqrt(Math.max(0, conc)) * 1.6);
-    const opacity = Math.min(1, 0.35 + Math.log10(1 + conc) * 0.25);
-    return { radius, opacity, bucket: bucketize(conc) };
+  const { visualScale, opacity, bucket } = useMemo(() => {
+    const t = Math.log10(1 + Math.max(0, conc));
+    const visualScale = Math.min(1.42, Math.max(0.78, 0.82 + t * 0.12));
+    const opacity = Math.min(1, 0.36 + t * 0.22);
+    return { visualScale, opacity, bucket: bucketize(conc) };
   }, [conc]);
 
   const ringClass = COMPARTMENT_COLORS[d.compartment];
 
   return (
-    <div className="relative flex flex-col items-center gap-1 select-none">
+    <div
+      className="relative flex shrink-0 flex-col items-center gap-1 select-none py-1"
+      style={{ width: NODE_LAYOUT_W, minHeight: NODE_LAYOUT_MIN_H }}
+    >
       <Handle
         type="target"
         position={Position.Left}
         className="!h-1.5 !w-1.5 !border-0 !bg-zinc-600"
+        style={{ top: "44%" }}
       />
-      <button
-        type="button"
-        onClick={() => open("compound", d.compoundId)}
-        aria-label={`Inspect ${d.label} in ${d.compartment}`}
-        className={clsx(
-          "group flex items-center justify-center rounded-full bg-zinc-950/80 ring-2 transition-all duration-300 hover:ring-4 focus:outline-none focus-visible:ring-4",
-          "shadow-[0_0_30px_var(--tw-shadow-color)]",
-          ringClass,
-        )}
-        style={{
-          width: sizing.radius,
-          height: sizing.radius,
-          opacity: sizing.opacity,
-        }}
-        data-bucket={sizing.bucket}
-      >
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-100">
-          {d.label.length > 8 ? d.label.slice(0, 6) + "…" : d.label}
-        </span>
-      </button>
+      <div className="flex h-[72px] w-full shrink-0 items-center justify-center">
+        <button
+          type="button"
+          onClick={() => open("compound", d.compoundId)}
+          aria-label={`Inspect ${d.label} in ${d.compartment}`}
+          className={clsx(
+            "group flex shrink-0 items-center justify-center rounded-full bg-zinc-950/80 ring-2 transition-[box-shadow,ring-color] duration-300 hover:ring-4 focus:outline-none focus-visible:ring-4",
+            "shadow-[0_0_30px_var(--tw-shadow-color)]",
+            ringClass,
+          )}
+          style={{
+            width: ORB_PX,
+            height: ORB_PX,
+            transform: `scale(${visualScale})`,
+            opacity,
+          }}
+          data-bucket={bucket}
+        >
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-100">
+            {d.label.length > 8 ? d.label.slice(0, 6) + "…" : d.label}
+          </span>
+        </button>
+      </div>
       <div className="flex flex-col items-center gap-0.5">
         <div className="flex items-center gap-1 rounded-full bg-zinc-900/80 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider text-zinc-400 ring-1 ring-zinc-800">
           <span>{COMPARTMENT_LABELS[d.compartment]}</span>
@@ -102,6 +116,7 @@ function MoleculeNodeImpl({ data }: NodeProps) {
         type="source"
         position={Position.Right}
         className="!h-1.5 !w-1.5 !border-0 !bg-zinc-600"
+        style={{ top: "44%" }}
       />
     </div>
   );

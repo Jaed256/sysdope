@@ -42,10 +42,10 @@ export default function AboutPage() {
         <h2 className="mt-10 text-xl font-semibold text-zinc-100">Phase history</h2>
         <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm text-zinc-300">
           <li><strong className="text-zinc-100">Phase 1</strong> — seed pathway, kinetic core, PubChem adapter, Vitest simulation tests, React Flow UI.</li>
-          <li><strong className="text-zinc-100">Phase 2</strong> — dedicated kinetics config, cofactor pools, inhibitor sliders, adaptive substepping, flux-weighted particles, scenario cards.</li>
+          <li><strong className="text-zinc-100">Phase 2</strong> — dedicated kinetics config, cofactor pools, inhibitor sliders, adaptive substepping, flux-weighted edge animation, scenario cards.</li>
           <li><strong className="text-zinc-100">Phase 3</strong> — UniProt, Rhea, ChEBI, Europe PMC live adapters with Zod parsing, merged API routes, literature search panel, richer health endpoint.</li>
           <li><strong className="text-zinc-100">Phase 4</strong> — guided lessons, cofactor tooltips, beginner / advanced gating, citations toggle, Lab Notebook refresh.</li>
-          <li><strong className="text-zinc-100">Phase 5 (current polish)</strong> — landing refresh, accurate docs, reversible global disclaimer, postsynaptic binding edges, particle overlay fix (rendered inside React Flow), alert when TH is completely blocked, accessibility pass on marketing pages, GitHub links.</li>
+          <li><strong className="text-zinc-100">Phase 5 (current polish)</strong> — landing refresh, accurate docs, reversible global disclaimer, postsynaptic binding edges, stable pathway edge flux (inside React Flow), alert when TH is completely blocked, accessibility pass on marketing pages, GitHub links.</li>
         </ol>
 
         <p className="mt-10 text-sm">

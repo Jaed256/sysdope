@@ -14,7 +14,7 @@ const HIGHLIGHTS = [
   {
     icon: Network,
     title: "Pathway as a mini-game",
-    body: "React Flow renders compartments, precursors, enzymes, transporters, and D1–D5 teaching nodes. Flux particles travel real reaction edges using the headless engine’s lastFlux map.",
+    body: "React Flow renders compartments, precursors, enzymes, transporters, and D1–D5 teaching nodes. Edge dash animation reflects the headless engine’s lastFlux / lastFluxRate maps.",
   },
   {
     icon: Atom,

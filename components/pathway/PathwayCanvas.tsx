@@ -84,6 +84,7 @@ function PathwayCanvasInner() {
         onEdgesChange={onEdgesChange}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
+        onlyRenderVisibleElements
         proOptions={{ hideAttribution: false }}
         fitView
         fitViewOptions={{ padding: 0.2 }}

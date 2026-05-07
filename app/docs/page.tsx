@@ -37,7 +37,7 @@ export default function DocsPage() {
           <li><code className="rounded bg-zinc-900 px-1.5 py-0.5 text-fuchsia-200">lib/simulation/*</code> — pure TypeScript engine (no React): tick, alerts, scenarios, cofactors.</li>
           <li><code className="rounded bg-zinc-900 px-1.5 py-0.5 text-fuchsia-200">lib/data/*</code> — remote adapters + <code className="text-fuchsia-200">normalize.ts</code> merge helpers.</li>
           <li><code className="rounded bg-zinc-900 px-1.5 py-0.5 text-fuchsia-200">app/api/*</code> — Route Handlers (Node runtime; cache headers / revalidate per adapter).</li>
-          <li><code className="rounded bg-zinc-900 px-1.5 py-0.5 text-fuchsia-200">components/pathway/*</code> — React Flow canvas, enzyme gates, molecule nodes, particle flux overlay layered inside RF.</li>
+          <li><code className="rounded bg-zinc-900 px-1.5 py-0.5 text-fuchsia-200">components/pathway/*</code> — React Flow canvas, enzyme gates, molecule nodes, custom reaction edges with motion-safe flux styling.</li>
           <li><code className="rounded bg-zinc-900 px-1.5 py-0.5 text-fuchsia-200">lib/knowledge/*</code> — guided-lesson corpus + cofactor tooltip strings (citations required per claim).</li>
           <li><code className="rounded bg-zinc-900 px-1.5 py-0.5 text-fuchsia-200">lib/ui/preferencesStore.ts</code> — persisted beginner/advanced, citations toggle, disclaimer dismissal.</li>
         </ul>

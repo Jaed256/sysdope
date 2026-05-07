@@ -1,28 +1,28 @@
 "use client";
 
+import { memo } from "react";
 import {
   BaseEdge,
   EdgeLabelRenderer,
   getBezierPath,
   type EdgeProps,
 } from "@xyflow/react";
-import { useMemo } from "react";
 import { useSimulationStore } from "@/lib/simulation/store";
 import type { ReactionEdgeData } from "@/lib/pathway/graph";
 import { reactionAnimTransitSeconds } from "@/lib/simulation/kineticsConfig";
-
-const MAX_FLUX_PARTICLES = 2;
 
 function clamp(n: number, lo: number, hi: number) {
   return Math.max(lo, Math.min(hi, n));
 }
 
 /**
- * Flux dots use a **kinetics-tiered** transit time plus `sqrt(speed)` scaling so
- * wall-clock motion stays stable when per-tick flux swings (inhibition,
- * substepping, or 2×/4× time). Brightness still tracks the live rate.
+ * Flux is shown with a **stable** dashed-edge animation: duration is derived from
+ * kinetics tier and simulation speed only (not per-tick flux), so path
+ * updates from React Flow do not fight SVG motion primitives. Intensity still
+ * tracks `lastFluxRate`. Moving dots were removed — they SMIL-jumped when node
+ * layout or edge geometry changed at high speed / high load.
  */
-export function ReactionEdge(props: EdgeProps) {
+function ReactionEdgeImpl(props: EdgeProps) {
   const {
     id,
     sourceX,
@@ -53,82 +53,37 @@ export function ReactionEdge(props: EdgeProps) {
     targetPosition,
   });
 
-  const motionPathId = `${id}-sysdope-flux-path`;
-
-  const intensity = clamp(fluxRate / 5.2, 0, 1);
+  const cappedRate = clamp(fluxRate, 0, 48);
+  const intensity = clamp(cappedRate / 5.2, 0, 1);
   const stroke =
     intensity > 0.62 ? "#e879f9" : intensity > 0.22 ? "#67e8f9" : "#52525b";
 
   const transitBase = reactionId ? reactionAnimTransitSeconds(reactionId) : 3.2;
   const durSec = clamp(
     transitBase / Math.sqrt(Math.max(0.2, speed)),
-    0.7,
-    16,
-  );
-
-  const particleCount =
-    fluxRate > 0.008
-      ? Math.min(
-          MAX_FLUX_PARTICLES,
-          Math.max(1, fluxRate > 0.085 ? 2 : 1),
-        )
-      : 0;
-
-  const animEpoch = useMemo(
-    () => `${Math.round(durSec * 40)}-${Math.round(speed * 20)}`,
-    [durSec, speed],
+    0.95,
+    18,
   );
 
   return (
     <>
-      {particleCount > 0 && (
-        <path
-          id={motionPathId}
-          d={path}
-          fill="none"
-          stroke="none"
-          strokeWidth={0}
-          aria-hidden
-        />
-      )}
       <BaseEdge
         id={id}
         path={path}
         markerEnd={markerEnd}
         style={{
           stroke,
-          strokeWidth: 1.2 + intensity * 1.6,
-          strokeDasharray: "4 6",
+          strokeWidth: 1.2 + intensity * 1.65,
+          strokeDasharray: "5 7",
           strokeDashoffset: 0,
           opacity: 0.52 + intensity * 0.42,
-          transition: "stroke 220ms ease, opacity 220ms ease, stroke-width 220ms ease",
+          transition: "stroke 180ms ease-out, opacity 180ms ease-out, stroke-width 180ms ease-out",
           animation:
-            intensity > 0.035
+            intensity > 0.028
               ? `sysdope-edge-dash-flow ${durSec}s linear infinite`
               : undefined,
         }}
       />
-      {particleCount > 0 &&
-        Array.from({ length: particleCount }).map((_, i) => (
-          <circle
-            key={`${id}-p-${animEpoch}-${i}`}
-            r={1.85}
-            fill="#e879f9"
-            opacity={clamp(0.22 + intensity * 0.78, 0, 0.92)}
-            className="sysdope-flux-particle-edge pointer-events-none"
-            aria-hidden
-          >
-            <animateMotion
-              dur={`${durSec}s`}
-              repeatCount="indefinite"
-              begin={`${(i * durSec) / Math.max(1, particleCount * 1.15)}s`}
-              rotate="0"
-              calcMode="linear"
-            >
-              <mpath href={`#${motionPathId}`} />
-            </animateMotion>
-          </circle>
-        ))}
       {intensity > 0.38 && (
         <EdgeLabelRenderer>
           <div
@@ -145,3 +100,5 @@ export function ReactionEdge(props: EdgeProps) {
     </>
   );
 }
+
+export const ReactionEdge = memo(ReactionEdgeImpl);

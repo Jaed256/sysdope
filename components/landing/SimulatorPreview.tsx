@@ -27,7 +27,7 @@ export function SimulatorPreview() {
               Pathway canvas + kinetic engine + live citations
             </p>
             <p className="mt-2 max-w-md text-sm leading-relaxed text-zinc-400">
-              Flux particles ride the edges, compartments are color-banded,
+              Animated flux rides the reaction edges, compartments are color-banded,
               vesicle releases spike synaptic dopamine, postsynaptic D1-D5 hubs
               show binding drive, drawers pull UniProt / PubChem / Rhea /
               Europe PMC live.
