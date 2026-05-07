@@ -1,12 +1,7 @@
 "use client";
 
 import { memo, useMemo } from "react";
-import {
-  BaseEdge,
-  EdgeLabelRenderer,
-  getBezierPath,
-  type EdgeProps,
-} from "@xyflow/react";
+import { BaseEdge, getBezierPath, type EdgeProps } from "@xyflow/react";
 import { useShallow } from "zustand/react/shallow";
 import { useSimulationStore } from "@/lib/simulation/store";
 import type { ReactionEdgeData } from "@/lib/pathway/graph";
@@ -16,25 +11,22 @@ function clamp(n: number, lo: number, hi: number) {
   return Math.max(lo, Math.min(hi, n));
 }
 
-/** Coarsen flux readout so concentration ticks do not thrash stroke width every frame. */
 function quantizeFluxRate(rate: number): number {
   if (rate <= 0) return 0;
   return Math.round(rate * 10) / 10;
 }
 
-function quantizeFlux(f: number): number {
-  return Math.round(f * 4) / 4;
-}
-
-function quantizeSpeedDisplay(v: number): number {
-  return Math.round(v * 24) / 24;
+/** Match the speed slider step so dash timing does not churn between stops. */
+function quantizeSpeed(s: number): number {
+  return Math.round(s * 4) / 4;
 }
 
 /**
- * Dash timing follows `speedDisplay` (eased toward simulation `speed` in the
- * store loop) so changing the speed dial does not snap CSS animation period.
- * Flux readout uses quantized slices. Dash animation stays defined; play-state
- * pauses when idle.
+ * Flux = stroke weight + opacity. Dash motion uses **simulation `speed`**
+ * (quantized) with duration `transitBase / speed` so higher × visibly runs
+ * faster. `animation` shorthand is avoided — `animationName` + `animationDuration`
+ * reduces Chrome resetting the keyframes when only duration changes.
+ * Floating flux labels were removed (they read like stray “particles”).
  */
 function ReactionEdgeImpl(props: EdgeProps) {
   const {
@@ -46,28 +38,23 @@ function ReactionEdgeImpl(props: EdgeProps) {
     sourcePosition,
     targetPosition,
     data,
-    markerEnd,
   } = props;
   const reactionId = (data as ReactionEdgeData | undefined)?.reactionId;
 
-  const { flux, fluxRate, speedDisplay } = useSimulationStore(
+  const { fluxRate, speedQ } = useSimulationStore(
     useShallow((s) => {
+      const speedQ = quantizeSpeed(s.speed);
       if (!reactionId) {
-        return {
-          flux: 0,
-          fluxRate: 0,
-          speedDisplay: quantizeSpeedDisplay(s.speedDisplay ?? s.speed),
-        };
+        return { fluxRate: 0, speedQ };
       }
       return {
-        flux: quantizeFlux(s.lastFlux[reactionId] ?? 0),
         fluxRate: quantizeFluxRate(s.lastFluxRate[reactionId] ?? 0),
-        speedDisplay: quantizeSpeedDisplay(s.speedDisplay ?? s.speed),
+        speedQ,
       };
     }),
   );
 
-  const [path, labelX, labelY] = getBezierPath({
+  const [path] = getBezierPath({
     sourceX,
     sourceY,
     targetX,
@@ -82,49 +69,31 @@ function ReactionEdgeImpl(props: EdgeProps) {
     intensity > 0.62 ? "#e879f9" : intensity > 0.22 ? "#67e8f9" : "#52525b";
 
   const transitBase = reactionId ? reactionAnimTransitSeconds(reactionId) : 3.2;
-  const durSec = useMemo(
-    () =>
-      clamp(
-        Math.round((transitBase / Math.sqrt(Math.max(0.15, speedDisplay))) * 8) / 8,
-        1.15,
-        22,
-      ),
-    [transitBase, speedDisplay],
-  );
+  const durSec = useMemo(() => {
+    const sp = Math.max(0.2, speedQ);
+    return clamp(Math.round((transitBase / sp) * 20) / 20, 0.75, 22);
+  }, [transitBase, speedQ]);
 
-  const dashActive = intensity > 0.012;
+  const dashActive = intensity > 0.01;
 
   return (
-    <>
-      <BaseEdge
-        id={id}
-        path={path}
-        markerEnd={markerEnd}
-        style={{
-          stroke,
-          strokeWidth: 1.2 + intensity * 1.65,
-          strokeDasharray: "5 7",
-          strokeDashoffset: 0,
-          opacity: dashActive ? 0.52 + intensity * 0.42 : 0.22,
-          /** Do not `transition` dash-offset; it fights `animation` and glitches in Chrome. */
-          animation: `sysdope-edge-dash-flow ${durSec}s linear infinite`,
-          animationPlayState: dashActive ? "running" : "paused",
-        }}
-      />
-      {intensity > 0.38 && (
-        <EdgeLabelRenderer>
-          <div
-            style={{
-              transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
-              pointerEvents: "none",
-            }}
-            className="rounded-full bg-zinc-950/80 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider text-fuchsia-200 ring-1 ring-fuchsia-500/40"
-          >
-            {flux.toFixed(1)}
-          </div>
-        </EdgeLabelRenderer>
-      )}
-    </>
+    <BaseEdge
+      id={id}
+      path={path}
+      markerEnd={undefined}
+      style={{
+        stroke,
+        strokeWidth: 1.15 + intensity * 1.7,
+        strokeDasharray: "5 7",
+        strokeDashoffset: 0,
+        opacity: dashActive ? 0.5 + intensity * 0.44 : 0.2,
+        animationName: "sysdope-edge-dash-flow",
+        animationDuration: `${durSec}s`,
+        animationIterationCount: "infinite",
+        animationTimingFunction: "linear",
+        animationPlayState: dashActive ? "running" : "paused",
+      }}
+    />
   );
 }
 

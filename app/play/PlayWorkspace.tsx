@@ -35,7 +35,7 @@ export function PlayWorkspace() {
 
         {/* Pathway canvas — primary on top for thumb reach */}
         <section className="relative order-1 flex min-h-[42dvh] flex-1 min-w-0 touch-manipulation lg:order-2 lg:min-h-0">
-          <div className="absolute left-1/2 top-2 z-10 w-[min(100%,22rem)] -translate-x-1/2 px-2 sm:top-3">
+          <div className="pointer-events-none absolute inset-x-0 top-2 z-10 flex justify-center px-2 sm:top-3">
             <SimulationControls />
           </div>
           <SettingsPanel />
