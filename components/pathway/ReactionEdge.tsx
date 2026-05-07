@@ -1,12 +1,13 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import {
   BaseEdge,
   EdgeLabelRenderer,
   getBezierPath,
   type EdgeProps,
 } from "@xyflow/react";
+import { useShallow } from "zustand/react/shallow";
 import { useSimulationStore } from "@/lib/simulation/store";
 import type { ReactionEdgeData } from "@/lib/pathway/graph";
 import { reactionAnimTransitSeconds } from "@/lib/simulation/kineticsConfig";
@@ -15,12 +16,26 @@ function clamp(n: number, lo: number, hi: number) {
   return Math.max(lo, Math.min(hi, n));
 }
 
+/** Coarsen store-driven visuals so rapid ticks do not thrash CSS animation state. */
+function quantizeFluxRate(rate: number): number {
+  if (rate <= 0) return 0;
+  return Math.round(rate * 14) / 14;
+}
+
+function quantizeFlux(f: number): number {
+  return Math.round(f * 6) / 6;
+}
+
+function quantizeSpeed(sp: number): number {
+  return Math.round(sp * 4) / 4;
+}
+
 /**
- * Flux is shown with a **stable** dashed-edge animation: duration is derived from
- * kinetics tier and simulation speed only (not per-tick flux), so path
- * updates from React Flow do not fight SVG motion primitives. Intensity still
- * tracks `lastFluxRate`. Moving dots were removed — they SMIL-jumped when node
- * layout or edge geometry changed at high speed / high load.
+ * Flux readout uses quantized store slices. Dash animation is **always** present
+ * but `animation-play-state` pauses when idle — toggling `animation: none` each
+ * tick caused jank and “crashes” at high simulation speed. Duration is
+ * quantized and clamped so stroke-dash never runs faster than the browser can
+ * paint smoothly.
  */
 function ReactionEdgeImpl(props: EdgeProps) {
   const {
@@ -36,13 +51,18 @@ function ReactionEdgeImpl(props: EdgeProps) {
   } = props;
   const reactionId = (data as ReactionEdgeData | undefined)?.reactionId;
 
-  const flux = useSimulationStore((s) =>
-    reactionId ? (s.lastFlux[reactionId] ?? 0) : 0,
+  const { flux, fluxRate, speed } = useSimulationStore(
+    useShallow((s) => {
+      if (!reactionId) {
+        return { flux: 0, fluxRate: 0, speed: s.speed };
+      }
+      return {
+        flux: quantizeFlux(s.lastFlux[reactionId] ?? 0),
+        fluxRate: quantizeFluxRate(s.lastFluxRate[reactionId] ?? 0),
+        speed: quantizeSpeed(s.speed),
+      };
+    }),
   );
-  const fluxRate = useSimulationStore((s) =>
-    reactionId ? (s.lastFluxRate[reactionId] ?? 0) : 0,
-  );
-  const speed = useSimulationStore((s) => s.speed);
 
   const [path, labelX, labelY] = getBezierPath({
     sourceX,
@@ -59,11 +79,17 @@ function ReactionEdgeImpl(props: EdgeProps) {
     intensity > 0.62 ? "#e879f9" : intensity > 0.22 ? "#67e8f9" : "#52525b";
 
   const transitBase = reactionId ? reactionAnimTransitSeconds(reactionId) : 3.2;
-  const durSec = clamp(
-    transitBase / Math.sqrt(Math.max(0.2, speed)),
-    0.95,
-    18,
+  const durSec = useMemo(
+    () =>
+      clamp(
+        Math.round((transitBase / Math.sqrt(Math.max(0.2, speed))) * 10) / 10,
+        1.05,
+        18,
+      ),
+    [transitBase, speed],
   );
+
+  const dashActive = intensity > 0.012;
 
   return (
     <>
@@ -76,12 +102,10 @@ function ReactionEdgeImpl(props: EdgeProps) {
           strokeWidth: 1.2 + intensity * 1.65,
           strokeDasharray: "5 7",
           strokeDashoffset: 0,
-          opacity: 0.52 + intensity * 0.42,
-          transition: "stroke 180ms ease-out, opacity 180ms ease-out, stroke-width 180ms ease-out",
-          animation:
-            intensity > 0.028
-              ? `sysdope-edge-dash-flow ${durSec}s linear infinite`
-              : undefined,
+          opacity: dashActive ? 0.52 + intensity * 0.42 : 0.22,
+          /** Do not `transition` dash-offset; it fights `animation` and glitches in Chrome. */
+          animation: `sysdope-edge-dash-flow ${durSec}s linear infinite`,
+          animationPlayState: dashActive ? "running" : "paused",
         }}
       />
       {intensity > 0.38 && (
