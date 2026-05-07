@@ -67,6 +67,27 @@ export type SimulationState = {
   /** computed flux per reaction id from the last tick (for visualization) */
   lastFlux: Record<string, number>;
   /**
+   * Simulated seconds integrated on the last tick (`dt` passed to `tick`).
+   * Used with `lastFlux` to derive stable flux *rates* for UI animations.
+   */
+  lastTickSimDt: number;
+  /** Per-reaction flux rate from the last tick: `lastFlux[id] / lastTickSimDt`. */
+  lastFluxRate: Record<string, number>;
+  /**
+   * Low-pass dopamine “tone” used for slow homeostatic loops (synaptic + cytosolic
+   * dopamine), in relative simulation units.
+   */
+  synapticToneEma: number;
+  /**
+   * Presynaptic DAT capacity multiplier (education). Rises after sustained high
+   * tone to increase reuptake in the toy model.
+   */
+  datHomeostaticFactor: number;
+  /**
+   * TH activity multiplier from tonic autoinhibition caricature when tone is high.
+   */
+  thTonicFactor: number;
+  /**
    * Postsynaptic D1–D5 gain multipliers (education). Drift with dopamine exposure
    * to mimic compensatory up/down regulation in the toy model.
    */

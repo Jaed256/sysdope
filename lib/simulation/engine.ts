@@ -15,7 +15,8 @@ import {
 } from "./dopamineModulation";
 import {
   defaultReceptorHomeostaticFactors,
-  stepReceptorHomeostasis,
+  dopamineInstantTone,
+  stepHomeostaticRegulation,
 } from "./receptorHomeostasis";
 import {
   COFACTORS,
@@ -179,6 +180,12 @@ function integrate(
         effectiveActivity *= state.receptorHomeostaticFactor?.[r.enzymeId] ?? 1;
       }
     }
+    if (r.id === "rx_th") {
+      effectiveActivity *= state.thTonicFactor ?? 1;
+    }
+    if (r.id === "rx_dat") {
+      effectiveActivity *= state.datHomeostaticFactor ?? 1;
+    }
 
     const cofactorInfo = cofactorModulator(r.id, cofactors);
 
@@ -329,14 +336,23 @@ export function tick(state: SimulationState, inputs: TickInputs): SimulationStat
   }
 
   const { oxFlux } = applyDopamineAutoOxidation(state, acc, dt);
-  const receptorHomeostaticFactor = stepReceptorHomeostasis(
+  const homeo = stepHomeostaticRegulation(
     {
       concentrations: acc,
       receptorHomeostaticFactor:
         state.receptorHomeostaticFactor ?? defaultReceptorHomeostaticFactors(),
+      synapticToneEma: state.synapticToneEma,
+      datHomeostaticFactor: state.datHomeostaticFactor,
+      thTonicFactor: state.thTonicFactor,
     },
     dt,
   );
+
+  const lastTickSimDt = dt;
+  const lastFluxRate: Record<string, number> = {};
+  for (const [rid, amt] of Object.entries(totalFlux)) {
+    lastFluxRate[rid] = amt / Math.max(1e-9, lastTickSimDt);
+  }
 
   const intermediate: SimulationState = {
     ...state,
@@ -346,8 +362,13 @@ export function tick(state: SimulationState, inputs: TickInputs): SimulationStat
     concentrations: acc,
     cofactors: cofactorsAcc,
     lastFlux: totalFlux,
+    lastTickSimDt,
+    lastFluxRate,
     lastAutoOxidationFlux: oxFlux,
-    receptorHomeostaticFactor,
+    receptorHomeostaticFactor: homeo.receptorHomeostaticFactor,
+    synapticToneEma: homeo.synapticToneEma,
+    datHomeostaticFactor: homeo.datHomeostaticFactor,
+    thTonicFactor: homeo.thTonicFactor,
     alertDismissedUntil: state.alertDismissedUntil ?? {},
   };
 
@@ -435,6 +456,11 @@ export function createInitialState(input: CreateInitialStateInput): SimulationSt
     eventLog: ["t=0 simulation initialized"],
     history: {},
     lastFlux: {},
+    lastTickSimDt: 0,
+    lastFluxRate: {},
+    synapticToneEma: dopamineInstantTone(concentrations),
+    datHomeostaticFactor: 1,
+    thTonicFactor: 1,
     receptorHomeostaticFactor: defaultReceptorHomeostaticFactors(),
     alertDismissedUntil: {},
     lastAutoOxidationFlux: 0,

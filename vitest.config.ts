@@ -9,7 +9,9 @@ export default defineConfig({
     globals: true,
     setupFiles: ["./tests/setup.ts"],
     include: ["tests/**/*.test.{ts,tsx}"],
-    pool: "forks",
+    /** `forks` intermittently times out starting workers on some Windows setups. */
+    pool: "threads",
+    maxWorkers: 1,
     isolate: false,
     fileParallelism: false,
   },

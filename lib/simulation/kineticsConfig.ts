@@ -74,6 +74,60 @@ export const AUTOOXIDATION_LITERATURE: Citation[] = [
   },
 ];
 
+/**
+ * Qualitative anchors for the *schematic* homeostasis loops (DAT/TH tone +
+ * postsynaptic gain). These citations support biological concepts, not numeric
+ * calibration of the toy rates.
+ */
+export const HOMEOSTASIS_LITERATURE: Citation[] = [
+  {
+    sourceName: "UniProt",
+    sourceType: "database",
+    title: "SLC6A3 — sodium-dependent dopamine transporter (DAT)",
+    url: "https://www.uniprot.org/uniprotkb/Q01959/entry",
+    accessedAt: "2026-05-06",
+    confidence: "low",
+  },
+  {
+    sourceName: "UniProt",
+    sourceType: "database",
+    title: "DRD2 — dopamine D2 receptor",
+    url: "https://www.uniprot.org/uniprotkb/P14416/entry",
+    accessedAt: "2026-05-06",
+    confidence: "low",
+  },
+  {
+    sourceName: "UniProt",
+    sourceType: "database",
+    title: "TH — tyrosine 3-monooxygenase (dopamine synthesis)",
+    url: "https://www.uniprot.org/uniprotkb/P07101/entry",
+    accessedAt: "2026-05-06",
+    confidence: "low",
+  },
+];
+
+const VMAX_REF_FOR_ANIM = 4.5;
+
+/**
+ * Wall-clock seconds for one full flux-dot transit along an edge when
+ * `simulation speed = 1`. Lower toy vmax → slower dot (teaching: TH is slow,
+ * DDC is faster). This intentionally does **not** chase instantaneous flux so
+ * SVG motion stays stable when sliders change.
+ */
+export function reactionAnimTransitSeconds(reactionId: string): number {
+  const row = REACTION_KINETICS[reactionId];
+  if (!row) return 3.4;
+  if (row.vmax > 0) {
+    const sec = 2.15 * (VMAX_REF_FOR_ANIM / Math.max(0.45, row.vmax));
+    return Math.min(11, Math.max(1.15, sec));
+  }
+  if (row.baseRate > 0) {
+    const sec = 6.2 / Math.max(0.08, row.baseRate);
+    return Math.min(12, Math.max(2.2, sec));
+  }
+  return 3.4;
+}
+
 export type ReactionKineticConfig = {
   /** Michaelis constant — substrate concentration at half-vmax. */
   km: number;
@@ -116,8 +170,8 @@ export const REACTION_KINETICS: Record<string, ReactionKineticConfig> = {
   rx_aldh_dopal: { km: 20, vmax: 6, baseRate: 0 },
   // 14. COMT: DOPAC -> HVA (cytosol -> extracellular)
   rx_comt_dopac: { km: 25, vmax: 3, baseRate: 0 },
-  // 15. DAT: synaptic DA -> cytosolic DA
-  rx_dat: { km: 5, vmax: 8, baseRate: 0 },
+  // 15. DAT: synaptic DA -> cytosolic DA (tuned so cleft clearance is obvious)
+  rx_dat: { km: 3.5, vmax: 14, baseRate: 0 },
   /* 15b — Postsynaptic D1-D5 dopamine-binding representation (education only). */
   rx_postsynaptic_d1: { km: 18, vmax: 2.6, baseRate: 0 },
   rx_postsynaptic_d2: { km: 16, vmax: 2.4, baseRate: 0 },

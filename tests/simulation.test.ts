@@ -53,6 +53,59 @@ describe("simulation engine", () => {
     );
   });
 
+  it("lastFluxRate matches lastFlux divided by the tick dt", () => {
+    const s = makeState({
+      conc: {
+        dopamine: { cytosol: 40, vesicle: 120, synapse: 35 },
+      },
+    });
+    const dt = 0.5;
+    const after = tick(s, { reactions: REACTIONS, enzymes: ENZYMES, dt });
+    expect(after.lastTickSimDt).toBe(dt);
+    for (const rid of Object.keys(after.lastFlux)) {
+      const flux = after.lastFlux[rid] ?? 0;
+      const rate = after.lastFluxRate[rid] ?? 0;
+      expect(rate).toBeCloseTo(flux / dt, 5);
+    }
+  });
+
+  it("sustained high dopamine tone trends DAT up, TH tonic down, and D2 gain down (toy homeostasis)", () => {
+    let s = makeState({
+      enzymeActivity: {
+        dat: "inhibit",
+        comt: "inhibit",
+        d1: "inhibit",
+        d2: "inhibit",
+        d3: "inhibit",
+        d4: "inhibit",
+        d5: "inhibit",
+      },
+      conc: {
+        dopamine: { cytosol: 50, vesicle: 80, synapse: 130 },
+      },
+    });
+    const d2Start = s.receptorHomeostaticFactor.d2 ?? 1;
+    const datStart = s.datHomeostaticFactor;
+    const thStart = s.thTonicFactor;
+    for (let i = 0; i < 500; i++) {
+      let next = tick(s, { reactions: REACTIONS, enzymes: ENZYMES, dt: 0.5 });
+      const d = next.concentrations.dopamine ?? {};
+      // Pin cleft load so diffusion/reuptake toy sinks cannot invert the tone
+      // (instrumental; asserts directionality of the slow regulators).
+      next = {
+        ...next,
+        concentrations: {
+          ...next.concentrations,
+          dopamine: { ...d, synapse: 130 },
+        },
+      };
+      s = next;
+    }
+    expect(s.receptorHomeostaticFactor.d2 ?? 1).toBeLessThan(d2Start - 0.03);
+    expect(s.datHomeostaticFactor).toBeGreaterThan(datStart + 0.04);
+    expect(s.thTonicFactor).toBeLessThan(thStart - 0.03);
+  });
+
   it("schematic autoxidation flux is visible when cytosolic + synaptic dopamine is very high", () => {
     const s = makeState({
       conc: {
