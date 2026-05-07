@@ -26,6 +26,12 @@ type ApplyScenarioMode = "merge" | "reset";
 
 export type SimStore = SimulationState & {
   drawer: DrawerState;
+  /**
+   * Smoothed copy of `speed` for pathway edge animation only. The physics
+   * `speed` updates immediately from the slider; this value eases toward it so
+   * CSS dash timing does not reset harshly every time the dial moves.
+   */
+  speedDisplay: number;
 
   setEnzymeActivity: (enzymeId: string, level: EnzymeActivityLevel) => void;
   setInhibitorStrength: (enzymeId: string, strength: number) => void;
@@ -62,6 +68,7 @@ function mergeConcentrations(
 export const useSimulationStore = create<SimStore>((set, get) => ({
   ...initial,
   drawer: null,
+  speedDisplay: initial.speed,
 
   setEnzymeActivity: (enzymeId, level) => {
     set((s) => ({
@@ -116,6 +123,7 @@ export const useSimulationStore = create<SimStore>((set, get) => ({
         inhibitorStrength,
         cofactors,
         concentrations,
+        speedDisplay: mode === "reset" ? 1 : (s as SimStore).speedDisplay,
         alertDismissedUntil: mode === "reset" ? {} : { ...s.alertDismissedUntil },
         eventLog: [
           ...baseState.eventLog,
@@ -154,6 +162,7 @@ export const useSimulationStore = create<SimStore>((set, get) => ({
     set({
       ...createInitialState({ enzymes: SEED_ENZYMES }),
       drawer: null,
+      speedDisplay: 1,
     }),
 
   refillCofactors: () => {
@@ -174,23 +183,39 @@ export const useSimulationStore = create<SimStore>((set, get) => ({
 
   startLoop: () => {
     let cancelled = false;
-    let last = performance.now();
+    let lastTickWall = performance.now();
+    let lastFrame = performance.now();
     const step = (now: number) => {
       if (cancelled) return;
-      const elapsed = now - last;
+      const frameDtSec = Math.min(0.09, Math.max(0, (now - lastFrame) / 1000));
+      lastFrame = now;
+
+      const s = get();
+      const target = s.speed;
+      const prevDisplay = s.speedDisplay ?? target;
+      let nextDisplay = prevDisplay + (target - prevDisplay) * Math.min(1, frameDtSec * 11);
+      if (Math.abs(target - nextDisplay) < 0.004) nextDisplay = target;
+      const speedDisplay = Math.round(nextDisplay * 24) / 24;
+
+      const elapsed = now - lastTickWall;
       if (elapsed >= SIMULATION_REFRESH_MS) {
-        last = now;
-        const s = get();
+        lastTickWall = now;
         if (!s.paused) {
           const dt = SIMULATION_TICK_DT * s.speed;
-          set(
-            tick(s, {
+          set({
+            ...tick(s, {
               reactions: SEED_REACTIONS,
               enzymes: SEED_ENZYMES,
               dt,
             }),
-          );
+            drawer: s.drawer,
+            speedDisplay,
+          });
+        } else {
+          set({ speedDisplay });
         }
+      } else if (speedDisplay !== s.speedDisplay) {
+        set({ speedDisplay });
       }
       requestAnimationFrame(step);
     };

@@ -16,26 +16,25 @@ function clamp(n: number, lo: number, hi: number) {
   return Math.max(lo, Math.min(hi, n));
 }
 
-/** Coarsen store-driven visuals so rapid ticks do not thrash CSS animation state. */
+/** Coarsen flux readout so concentration ticks do not thrash stroke width every frame. */
 function quantizeFluxRate(rate: number): number {
   if (rate <= 0) return 0;
-  return Math.round(rate * 14) / 14;
+  return Math.round(rate * 10) / 10;
 }
 
 function quantizeFlux(f: number): number {
-  return Math.round(f * 6) / 6;
+  return Math.round(f * 4) / 4;
 }
 
-function quantizeSpeed(sp: number): number {
-  return Math.round(sp * 4) / 4;
+function quantizeSpeedDisplay(v: number): number {
+  return Math.round(v * 24) / 24;
 }
 
 /**
- * Flux readout uses quantized store slices. Dash animation is **always** present
- * but `animation-play-state` pauses when idle — toggling `animation: none` each
- * tick caused jank and “crashes” at high simulation speed. Duration is
- * quantized and clamped so stroke-dash never runs faster than the browser can
- * paint smoothly.
+ * Dash timing follows `speedDisplay` (eased toward simulation `speed` in the
+ * store loop) so changing the speed dial does not snap CSS animation period.
+ * Flux readout uses quantized slices. Dash animation stays defined; play-state
+ * pauses when idle.
  */
 function ReactionEdgeImpl(props: EdgeProps) {
   const {
@@ -51,15 +50,19 @@ function ReactionEdgeImpl(props: EdgeProps) {
   } = props;
   const reactionId = (data as ReactionEdgeData | undefined)?.reactionId;
 
-  const { flux, fluxRate, speed } = useSimulationStore(
+  const { flux, fluxRate, speedDisplay } = useSimulationStore(
     useShallow((s) => {
       if (!reactionId) {
-        return { flux: 0, fluxRate: 0, speed: s.speed };
+        return {
+          flux: 0,
+          fluxRate: 0,
+          speedDisplay: quantizeSpeedDisplay(s.speedDisplay ?? s.speed),
+        };
       }
       return {
         flux: quantizeFlux(s.lastFlux[reactionId] ?? 0),
         fluxRate: quantizeFluxRate(s.lastFluxRate[reactionId] ?? 0),
-        speed: quantizeSpeed(s.speed),
+        speedDisplay: quantizeSpeedDisplay(s.speedDisplay ?? s.speed),
       };
     }),
   );
@@ -82,11 +85,11 @@ function ReactionEdgeImpl(props: EdgeProps) {
   const durSec = useMemo(
     () =>
       clamp(
-        Math.round((transitBase / Math.sqrt(Math.max(0.2, speed))) * 10) / 10,
-        1.05,
-        18,
+        Math.round((transitBase / Math.sqrt(Math.max(0.15, speedDisplay))) * 8) / 8,
+        1.15,
+        22,
       ),
-    [transitBase, speed],
+    [transitBase, speedDisplay],
   );
 
   const dashActive = intensity > 0.012;
