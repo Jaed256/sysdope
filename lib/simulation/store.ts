@@ -182,15 +182,25 @@ export const useSimulationStore = create<SimStore>((set, get) => ({
         lastTickWall = now;
         const s = get();
         if (!s.paused) {
-          const dt = SIMULATION_TICK_DT * s.speed;
-          set({
-            ...tick(s, {
-              reactions: SEED_REACTIONS,
-              enzymes: SEED_ENZYMES,
-              dt,
-            }),
-            drawer: s.drawer,
-          });
+          const totalDt = SIMULATION_TICK_DT * s.speed;
+          const stepMax = SIMULATION_TICK_DT;
+          let cur: SimulationState = s;
+          let remaining = totalDt;
+          while (remaining > 1e-9) {
+            const d = Math.min(stepMax, remaining);
+            const isLast = remaining - d < 1e-9;
+            cur = tick(
+              cur,
+              {
+                reactions: SEED_REACTIONS,
+                enzymes: SEED_ENZYMES,
+                dt: d,
+              },
+              { advanceClock: isLast },
+            );
+            remaining -= d;
+          }
+          set({ ...cur, drawer: s.drawer });
         }
       }
       requestAnimationFrame(step);

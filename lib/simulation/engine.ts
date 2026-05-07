@@ -111,6 +111,15 @@ export type TickInputs = {
   synapticDiffusion?: number;
 };
 
+export type TickOptions = {
+  /**
+   * When false, integrate chemistry for `dt` but do not advance `time`, history,
+   * alerts, or alert event-log lines (used to split one UI tick into smaller
+   * physics steps at high simulation speed).
+   */
+  advanceClock?: boolean;
+};
+
 function writeConc(
   acc: Record<string, CompartmentMap>,
   compoundId: string,
@@ -283,7 +292,12 @@ function integrate(
  * more than SUBSTEP_FLUX_THRESHOLD units in a single step. This keeps
  * concentrations stable when vmax×activity×dt is large.
  */
-export function tick(state: SimulationState, inputs: TickInputs): SimulationState {
+export function tick(
+  state: SimulationState,
+  inputs: TickInputs,
+  options?: TickOptions,
+): SimulationState {
+  const advanceClock = options?.advanceClock !== false;
   const dt = inputs.dt;
   const releaseQuantum = inputs.releaseQuantum ?? DEFAULT_RELEASE_QUANTUM;
 
@@ -356,7 +370,7 @@ export function tick(state: SimulationState, inputs: TickInputs): SimulationStat
 
   const intermediate: SimulationState = {
     ...state,
-    time: state.time + 1,
+    time: advanceClock ? state.time + 1 : state.time,
     wallMs: state.wallMs + dt * 1000,
     pendingReleases: 0,
     concentrations: acc,
@@ -371,6 +385,15 @@ export function tick(state: SimulationState, inputs: TickInputs): SimulationStat
     thTonicFactor: homeo.thTonicFactor,
     alertDismissedUntil: state.alertDismissedUntil ?? {},
   };
+
+  if (!advanceClock) {
+    return {
+      ...intermediate,
+      alerts: state.alerts,
+      eventLog: state.eventLog,
+      history: state.history,
+    };
+  }
 
   const rawAlerts = evaluateAlerts(intermediate);
   const dismissed = intermediate.alertDismissedUntil;

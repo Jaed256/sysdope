@@ -69,6 +69,22 @@ describe("simulation engine", () => {
     }
   });
 
+  it("substeps with advanceClock false advance wallMs each step but time only on the last", () => {
+    const s0 = makeState();
+    const totalDt = 2;
+    const stepMax = 0.5;
+    let cur = s0;
+    let remaining = totalDt;
+    while (remaining > 1e-9) {
+      const d = Math.min(stepMax, remaining);
+      const isLast = remaining - d < 1e-9;
+      cur = tick(cur, { reactions: REACTIONS, enzymes: ENZYMES, dt: d }, { advanceClock: isLast });
+      remaining -= d;
+    }
+    expect(cur.time).toBe(s0.time + 1);
+    expect(cur.wallMs).toBeCloseTo(s0.wallMs + totalDt * 1000, 5);
+  });
+
   it("sustained high dopamine tone trends DAT up, TH tonic down, and D2 gain down (toy homeostasis)", () => {
     let s = makeState({
       enzymeActivity: {
