@@ -3,7 +3,11 @@
 import { useSimulationStore } from "@/lib/simulation/store";
 import { illustrativeExtracellularDopamineNm } from "@/lib/education/physiologicDisplay";
 import { useUIPreferences } from "@/lib/ui/preferencesStore";
-import { dopamineEnzymaticOxidationShield } from "@/lib/simulation/dopamineModulation";
+import {
+  dopamineEnzymaticOxidationShield,
+  estimateDopamineAutoOxidationFlux,
+} from "@/lib/simulation/dopamineModulation";
+import { SIMULATION_TICK_DT } from "@/lib/simulation/kineticsConfig";
 import { Sparkline } from "./Sparkline";
 
 type LevelRow = {
@@ -49,15 +53,21 @@ export function LevelsDashboard() {
   const time = useSimulationStore((s) => s.time);
   const illustrativeNm = useUIPreferences((s) => s.illustrativeExtracellularDaNm);
   const lastAutoOx = useSimulationStore((s) => s.lastAutoOxidationFlux);
+  const paused = useSimulationStore((s) => s.paused);
   const shield = useSimulationStore((s) => dopamineEnzymaticOxidationShield(s));
+  const estimatedOx = useSimulationStore((s) =>
+    estimateDopamineAutoOxidationFlux(s, SIMULATION_TICK_DT * s.speed),
+  );
 
   const daMap = concentrations.dopamine ?? {};
   const autoOxPool =
     (daMap.cytosol ?? 0) + (daMap.synapse ?? 0);
-  const autoOxHighlight = autoOxPool >= 2000 || lastAutoOx > 0.0005;
+  const displayOx = paused ? estimatedOx : lastAutoOx;
+  const autoOxHighlight =
+    autoOxPool >= 2000 || displayOx > 0.0005;
 
   return (
-    <div className="glass w-full max-w-xs rounded-xl p-3">
+    <div className="glass w-full max-w-full rounded-xl p-3 sm:max-w-xs">
       <div className="mb-2 flex items-center justify-between">
         <h2 className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
           Live levels
@@ -138,15 +148,23 @@ export function LevelsDashboard() {
           <span className="tabular-nums font-medium text-zinc-100">
             {autoOxPool.toFixed(0)}
           </span>{" "}
-          rel. · Last-step sink flux:{" "}
+          rel. · Sink flux ({paused ? "estimate" : "last step"}):{" "}
           <span className="tabular-nums font-medium text-zinc-100">
-            {lastAutoOx.toFixed(4)}
+            {displayOx < 0.0001 && displayOx > 0
+              ? displayOx.toExponential(2)
+              : displayOx.toFixed(4)}
           </span>{" "}
           · Clearance index:{" "}
           <span className="tabular-nums font-medium text-zinc-100">
             {shield.toFixed(2)}
           </span>
         </p>
+        {paused && (
+          <p className="mt-1 text-[9px] text-amber-200/90">
+            Clock paused — flux shows the schematic sink rate from current pools
+            and sliders (no integration this tick).
+          </p>
+        )}
         <p className="mt-1 text-zinc-500">
           Real dopamine oxidation couples O₂, pH, metal ions, quinone chemistry,
           and enzymatic clearance in ways this graph cannot separate; the engine

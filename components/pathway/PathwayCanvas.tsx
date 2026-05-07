@@ -22,10 +22,11 @@ import {
   type PathwayNode,
 } from "@/lib/pathway/graph";
 import { useSimulationStore } from "@/lib/simulation/store";
+import { estimateDopamineAutoOxidationFlux } from "@/lib/simulation/dopamineModulation";
+import { SIMULATION_TICK_DT } from "@/lib/simulation/kineticsConfig";
 import { MoleculeNode } from "./MoleculeNode";
 import { EnzymeGate } from "./EnzymeGate";
 import { ReactionEdge } from "./ReactionEdge";
-import { ParticleLayer } from "./ParticleLayer";
 
 const nodeTypes = {
   [MOLECULE_NODE_TYPE]: MoleculeNode,
@@ -48,7 +49,11 @@ function PathwayCanvasInner() {
     initialEdges as PathwayEdge[],
   );
   const startLoop = useSimulationStore((s) => s.startLoop);
-  const lastAutoOx = useSimulationStore((s) => s.lastAutoOxidationFlux);
+  const oxGlow = useSimulationStore((s) =>
+    s.paused
+      ? estimateDopamineAutoOxidationFlux(s, SIMULATION_TICK_DT * s.speed)
+      : s.lastAutoOxidationFlux,
+  );
   const startedRef = useRef(false);
 
   useEffect(() => {
@@ -62,8 +67,8 @@ function PathwayCanvasInner() {
   }, [startLoop]);
 
   return (
-    <div className="relative h-full w-full">
-      {lastAutoOx > 0.04 && (
+    <div className="relative h-full min-h-[min(320px,45dvh)] w-full touch-manipulation">
+      {oxGlow > 0.018 && (
         <motion.div
           aria-hidden
           className="pointer-events-none absolute inset-0 z-20 bg-gradient-to-br from-amber-500/20 via-rose-600/20 to-transparent mix-blend-screen"
@@ -82,13 +87,16 @@ function PathwayCanvasInner() {
         proOptions={{ hideAttribution: false }}
         fitView
         fitViewOptions={{ padding: 0.2 }}
-        minZoom={0.3}
+        minZoom={0.22}
         maxZoom={1.6}
+        panOnScroll
+        zoomOnScroll
+        zoomOnPinch
+        preventScrolling={false}
         defaultEdgeOptions={{
           type: REACTION_EDGE_TYPE,
         }}
       >
-        <ParticleLayer />
         <Background
           variant={BackgroundVariant.Dots}
           gap={28}
@@ -116,7 +124,7 @@ function PathwayCanvasInner() {
         <MiniMap
           pannable
           zoomable
-          className="!bg-zinc-950/80 !border !border-zinc-800"
+          className="!hidden lg:!block !bg-zinc-950/80 !border !border-zinc-800"
           nodeColor={(n) =>
             n.type === ENZYME_NODE_TYPE ? "#67e8f9" : "#e879f9"
           }

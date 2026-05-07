@@ -9,8 +9,9 @@ import type { Citation } from "@/types/citation";
  *     rate-limiting step.
  *   - VMAT2 has finite vmax and the vesicle compartment has a hard capacity
  *     so cytosolic dopamine can rise when MAO is inhibited.
- *   - DAT has a low km and moderate vmax so synaptic dopamine clearance is
- *     visibly modulated.
+ *   - A schematic dopamine auto-oxidation sink is controlled separately via
+ *     `AUTOOXIDATION_*` constants with literature anchors in
+ *     `AUTOOXIDATION_LITERATURE` (qualitative chemistry context only).
  *
  * These are NOT serum or in-vitro values. Replacing any of them with a
  * source-backed value requires adding the corresponding citation in the
@@ -35,6 +36,43 @@ export const DEFAULT_SYNAPTIC_DIFFUSION = 0.04;
  */
 export const SUBSTEP_FLUX_THRESHOLD = 8;
 export const MAX_SUBSTEPS = 8;
+
+/**
+ * Dimensionless parameters for the *schematic* dopamine auto-oxidation sink.
+ * The simulator does not use molar concentrations; these weights scale how
+ * strongly effective MAO-B / COMT / MAO-A / ALDH activity (from sliders)
+ * suppress the extra sink relative to the toy vmax table in `REACTION_KINETICS`.
+ *
+ * Literature anchors (aqueous chemistry / pH dependence — not calibrated to
+ * this toy’s “relative simulation units”): see `AUTOOXIDATION_LITERATURE`.
+ */
+export const AUTOOXIDATION_SHIELD_REF = 14;
+/** Tuned so high cytosolic + synaptic loads produce a visible toy flux at normal clearance. */
+export const AUTOOXIDATION_K_REL = 0.00105;
+export const AUTOOXIDATION_POOL_MIN = 10;
+export const AUTOOXIDATION_MAX_FRACTION_PER_TICK = 0.11;
+
+export const AUTOOXIDATION_LITERATURE: Citation[] = [
+  {
+    sourceName: "Journal of the Chemical Society, Perkin Transactions 2",
+    sourceType: "paper",
+    title:
+      "Spontaneous autoxidation of dopamine: aqueous kinetics and O₂ involvement (context for non-enzymatic oxidation)",
+    doi: "10.1039/P29950000259",
+    url: "https://doi.org/10.1039/P29950000259",
+    accessedAt: "2026-05-06",
+    confidence: "high",
+  },
+  {
+    sourceName: "Frontiers in Molecular Neuroscience",
+    sourceType: "paper",
+    title: "Dopamine autoxidation is controlled by acidic pH (mechanistic context)",
+    doi: "10.3389/fnmol.2018.00467",
+    url: "https://doi.org/10.3389/fnmol.2018.00467",
+    accessedAt: "2026-05-06",
+    confidence: "high",
+  },
+];
 
 export type ReactionKineticConfig = {
   /** Michaelis constant — substrate concentration at half-vmax. */

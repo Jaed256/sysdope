@@ -73,27 +73,10 @@ body {
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  @keyframes sysdope-flux-travel {
-    0% {
-      transform: translate3d(var(--fx-x1), var(--fx-y1), 0) scale(0.65);
-      opacity: 0;
+  @keyframes sysdope-edge-dash-flow {
+    to {
+      stroke-dashoffset: -10;
     }
-    12% {
-      opacity: 1;
-    }
-    88% {
-      opacity: 1;
-    }
-    100% {
-      transform: translate3d(var(--fx-x2), var(--fx-y2), 0) scale(1);
-      opacity: 0;
-    }
-  }
-
-  .sysdope-flux-particle {
-    animation-name: sysdope-flux-travel;
-    animation-timing-function: linear;
-    animation-iteration-count: infinite;
   }
 }
 
@@ -105,6 +88,10 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
+  }
+
+  .sysdope-flux-particle-edge {
+    display: none !important;
   }
 }
 

@@ -7,7 +7,9 @@ import { KaTeXBlock } from "@/components/ui/KaTeXBlock";
 import {
   dopamineEnzymaticOxidationShield,
   enzymeEffectiveMultiplier,
+  estimateDopamineAutoOxidationFlux,
 } from "@/lib/simulation/dopamineModulation";
+import { SIMULATION_TICK_DT } from "@/lib/simulation/kineticsConfig";
 
 const AUTOX_CONTEXT_ENZYMES = new Set([
   "mao_a",
@@ -30,6 +32,14 @@ export function EnzymeFluxSection({ enzymeId }: Props) {
   const time = useSimulationStore((s) => s.time);
   const paused = useSimulationStore((s) => s.paused);
   const lastAutoOx = useSimulationStore((s) => s.lastAutoOxidationFlux);
+  const estimatedOx = useSimulationStore((s) =>
+    estimateDopamineAutoOxidationFlux(s, SIMULATION_TICK_DT * s.speed),
+  );
+  const displayOx = paused ? estimatedOx : lastAutoOx;
+  const oxStr =
+    displayOx < 0.0001 && displayOx > 0
+      ? displayOx.toExponential(2)
+      : displayOx.toFixed(4);
   const multiplier = useSimulationStore((s) =>
     enzymeEffectiveMultiplier(s, enzymeId),
   );
@@ -147,9 +157,9 @@ export function EnzymeFluxSection({ enzymeId }: Props) {
             oxidation, and quinone-type rearrangements—into one sink that competes
             with modeled MAO/COMT/ALDH clearance (qualitative anchors: DOIs
             10.1039/P29950000259 and 10.3389/fnmol.2018.00467 on the dopamine
-            compound card). Current sink flux:{" "}
+            compound card). Sink flux ({paused ? "estimate" : "last step"}):{" "}
             <span className="tabular-nums font-medium text-amber-200">
-              {lastAutoOx.toFixed(4)}
+              {oxStr}
             </span>
             {" · "}Clearance capacity index (higher → more modeled enzymatic
             competition):{" "}

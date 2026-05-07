@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createInitialState, tick, applyVesicleReleaseDirect } from "@/lib/simulation/engine";
+import { estimateDopamineAutoOxidationFlux } from "@/lib/simulation/dopamineModulation";
 import { SEED_ENZYMES } from "@/lib/pathway/seedEnzymes";
 import { SEED_REACTIONS } from "@/lib/pathway/seedReactions";
 import type {
@@ -50,6 +51,17 @@ describe("simulation engine", () => {
     expect(after.concentrations.dopamine?.vesicle ?? 0).toBeLessThan(
       s.concentrations.dopamine?.vesicle ?? 0,
     );
+  });
+
+  it("schematic autoxidation flux is visible when cytosolic + synaptic dopamine is very high", () => {
+    const s = makeState({
+      conc: {
+        dopamine: { cytosol: 4000, synapse: 200, vesicle: 30, extracellular: 0 },
+      },
+    });
+    expect(estimateDopamineAutoOxidationFlux(s, DT)).toBeGreaterThan(0.02);
+    const after = tick(s, { reactions: REACTIONS, enzymes: ENZYMES, dt: DT });
+    expect(after.lastAutoOxidationFlux).toBeGreaterThan(0.02);
   });
 
   it("never produces negative concentrations across many ticks of a noisy scenario", () => {

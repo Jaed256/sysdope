@@ -19,6 +19,12 @@ export const metadata: Metadata = {
     "An educational, citation-backed simulator for dopamine synthesis, vesicular handling, synaptic release, reuptake, and metabolism.",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {

@@ -62,7 +62,7 @@ app/
 components/
   landing/               NavBar, Hero, FeatureGrid, DisclaimerBanner
   pathway/               PathwayCanvas + MoleculeNode + EnzymeGate +
-                         ReactionEdge + ParticleLayer + PrecursorTray +
+                         ReactionEdge (SVG flux) + PrecursorTray +
                          SynapseMiniGame
   panels/                LevelsDashboard, EnzymeControls,
                          SimulationControls, AlertCenter, CompoundDrawer,
