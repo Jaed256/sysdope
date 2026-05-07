@@ -12,7 +12,10 @@ export function SimulationControls() {
   const reset = useSimulationStore((s) => s.reset);
 
   return (
-    <div className="glass pointer-events-auto inline-flex max-w-full flex-nowrap items-center gap-1.5 rounded-lg px-2 py-1.5">
+    <div
+      className="glass pointer-events-auto inline-flex max-w-full flex-nowrap items-center gap-1.5 rounded-lg px-2 py-1.5"
+      title="Higher speed advances more simulated time each tick (larger integration steps)."
+    >
       <Button
         size="sm"
         variant={paused ? "primary" : "ghost"}
